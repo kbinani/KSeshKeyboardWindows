@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="KSeshKeyboardWindows.vcxproj" Id="ec5adef5-c7c7-4659-90ce-4b747dae92ab" />
+</Solution>
