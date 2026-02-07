@@ -1,2 +1,7 @@
+x64
 *.vcxproj.user
 .vs
+*.idb
+*.pdb
+*.log
+*.ilk
