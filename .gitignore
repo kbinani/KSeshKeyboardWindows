@@ -5,3 +5,5 @@ x64
 *.pdb
 *.log
 *.ilk
+*.lnk
+*.aps

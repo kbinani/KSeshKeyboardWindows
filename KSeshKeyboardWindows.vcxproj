@@ -140,6 +140,13 @@
   <ItemGroup>
     <ClInclude Include="ClassFactory.hpp" />
     <ClInclude Include="Processor.hpp" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="KSeshKeyboardWindows.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="KSeshKeyboardWindows.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

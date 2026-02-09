@@ -44,7 +44,9 @@ public:
     return S_OK;
   }
 
-private:
+public:
   REFCLSID fClassId;
+
+private:
   HRESULT (*fCreateInstance)(_In_opt_ IUnknown* pUnkOuter, _In_ REFIID riid, _COM_Outptr_ void** ppvObj);
 };
