@@ -80,8 +80,7 @@ public:
 
   STDMETHODIMP Deactivate() override {
     if (fContext) {
-      fContext->Release();
-      fContext = nullptr;
+      fContext->AddRef();
     }
     deinitKeyEventSink();
     if (fThreadManager) {
