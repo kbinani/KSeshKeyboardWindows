@@ -7,7 +7,6 @@ public:
   {
   }
 
-  // IUnknown::QueryInterface
   STDMETHODIMP QueryInterface(REFIID riid, _Outptr_ void** ppvObj) override {
     if (IsEqualIID(riid, IID_IClassFactory) || IsEqualIID(riid, IID_IUnknown)) {
       *ppvObj = this;
@@ -19,22 +18,20 @@ public:
     return E_NOINTERFACE;
   }
 
-  // IUnknown::AddRef
   STDMETHODIMP_(ULONG) AddRef() override {
-    return DllAddRef() + 1;
+    DllAddRef();
+    return sRefCount + 1;
   }
 
-  // IUnknown::Release
   STDMETHODIMP_(ULONG) Release() override {
-    return DllRelease() + 1;
+    DllRelease();
+    return sRefCount + 1;
   }
 
-  // IClassFactory::CreateInstance
   STDMETHODIMP CreateInstance(_In_opt_ IUnknown* pUnkOuter, _In_ REFIID riid, _COM_Outptr_ void** ppvObj) override {
     return fCreateInstance(pUnkOuter, riid, ppvObj);
   }
 
-  // IClassFactory::LockServer
   STDMETHODIMP LockServer(BOOL lock) override {
     if (lock) {
       DllAddRef();

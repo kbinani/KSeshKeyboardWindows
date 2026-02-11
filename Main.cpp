@@ -7,6 +7,9 @@
 #include <strsafe.h>
 
 #include <exception>
+#include <cassert>
+#include <vector>
+#include <map>
 
 #include "resource.h"
 
@@ -22,10 +25,10 @@ static HINSTANCE sDllInstanceHandle;
 
 static const WCHAR kRegInfoPrefixCLSID[] = L"CLSID\\";
 #define CLSID_STRLEN (38)
-static const WCHAR TEXTSERVICE_DESC[] = L"KSeshKeyboard";
+static const WCHAR TEXTSERVICE_DESC[] = L"Ancient Egyptian Transliteration";
 static const WCHAR kRegInfoKeyInProSvr32[] = L"InProcServer32";
 static const WCHAR kRegInfoKeyThreadModel[] = L"ThreadingModel";
-#define TEXTSERVICE_LANGID MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)
+#define TEXTSERVICE_LANGID MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL)
 #define TEXTSERVICE_MODEL L"Apartment"
 #define TEXTSERVICE_ICON_INDEX -IDIS_KSESHKEYBOARD
 
@@ -40,33 +43,32 @@ static const GUID kSupportCategories[] = {
   GUID_TFCAT_TIPCAP_SYSTRAYSUPPORT,
 };
 
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv);
+STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid,  void** ppv);
 STDAPI DllCanUnloadNow();
 STDAPI DllRegisterServer();
 STDAPI DllUnregisterServer();
 
 static void UnsafeFreeGlobalObjects();
 static void UnsafeBuildGlobalObjects();
-static LONG DllAddRef();
-static LONG DllRelease();
+static void DllAddRef();
+static void DllRelease();
 
 #include "ClassFactory.hpp"
+#include "EditSession.hpp"
 #include "Processor.hpp"
 
-static LONG DllAddRef() {
-  return InterlockedIncrement(&sRefCount);
+static void DllAddRef() {
+  InterlockedIncrement(&sRefCount);
 }
 
-static LONG DllRelease() {
-  LONG after = InterlockedDecrement(&sRefCount);
-  if (after < 0) {
+static void DllRelease() {
+  if (InterlockedDecrement(&sRefCount) < 0) {
     EnterCriticalSection(&sMutex);
     if (sClassFactoryObjects[0] != nullptr) {
       UnsafeFreeGlobalObjects();
     }
     LeaveCriticalSection(&sMutex);
   }
-  return after;
 }
 
 static void UnsafeBuildGlobalObjects() {
@@ -81,15 +83,14 @@ static void UnsafeFreeGlobalObjects() {
   }
 }
 
-const BYTE GuidSymbols[] = {
-  3, 2, 1, 0, '-', 5, 4, '-', 7, 6, '-', 8, 9, '-', 10, 11, 12, 13, 14, 15
-};
-
-static const WCHAR HexDigits[] = L"0123456789ABCDEF";
-
 static BOOL CLSIDToString(REFGUID refGUID, _Out_writes_(39) WCHAR* pCLSIDString) {
   WCHAR* pTemp = pCLSIDString;
   const BYTE* pBytes = (const BYTE*)&refGUID;
+
+  static const BYTE GuidSymbols[] = {
+    3, 2, 1, 0, '-', 5, 4, '-', 7, 6, '-', 8, 9, '-', 10, 11, 12, 13, 14, 15
+  };
+  static const WCHAR HexDigits[] = L"0123456789ABCDEF";
 
   DWORD j = 0;
   pTemp[j++] = L'{';
@@ -309,7 +310,7 @@ BOOL APIENTRY DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID pvReserved) {
   return TRUE;
 }
 
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv) {
+STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv) {
   if (sClassFactoryObjects[0] == nullptr) {
     EnterCriticalSection(&sMutex);
     if (sClassFactoryObjects[0] == nullptr) {
