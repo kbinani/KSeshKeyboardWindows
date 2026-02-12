@@ -79,9 +79,6 @@ public:
   }
 
   STDMETHODIMP Deactivate() override {
-    if (fContext) {
-      fContext->AddRef();
-    }
     deinitKeyEventSink();
     if (fThreadManager) {
       fThreadManager->Release();
@@ -190,7 +187,6 @@ private:
 private:
   LONG fRefCount;
   ITfThreadMgr* fThreadManager;
-  ITfContext* fContext;
   TfClientId fClientId;
   DWORD fActivateFlags;
 };
