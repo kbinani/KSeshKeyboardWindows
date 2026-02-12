@@ -1,4 +1,4 @@
-LIBRARY KSeshKeyboardWindows.dll
+LIBRARY KSeshIME.dll
 
 EXPORTS
         DllGetClassObject    PRIVATE

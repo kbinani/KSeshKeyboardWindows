@@ -29,7 +29,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\KSeshKeyboardWindows.def">
+    <None Include="src\KSeshIME.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
