@@ -1,4 +1,5 @@
 x64
+/pkg/Output
 *.vcxproj.user
 .vs
 *.idb
