@@ -14,21 +14,15 @@ AppPublisherURL=https://github.com/kbinani/KSeshKeyboardWindows
 AppSupportURL=https://github.com/kbinani/KSeshKeyboardWindows
 AppUpdatesURL=https://github.com/kbinani/KSeshKeyboardWindows
 CreateAppDir=no
-; Uncomment the following line to run in non administrative install mode (install for current user only).
-;PrivilegesRequired=lowest
+PrivilegesRequired=admin
 OutputBaseFilename=KSeshIME
 SolidCompression=yes
 WizardStyle=modern dynamic
+ArchitecturesInstallIn64BitMode=x64os
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\x64\Release\KSeshKeyboardWindows.dll"; DestDir: "{sys}"; Flags: ignoreversion
+Source: "..\x64\Release\KSeshKeyboardWindows.dll"; DestDir: "{sys}"; Flags: ignoreversion regserver restartreplace
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-
-[Run]
-Filename: "regsvr32"; Parameters: "/s ""{sys}\KSeshKeyboardWindows.dll"""; Flags: shellexec
-
-[UninstallRun]
-Filename: "regsvr32"; Parameters: "/u /s ""{sys}\KSeshKeyboardWindows.dll"""; Flags: shellexec
