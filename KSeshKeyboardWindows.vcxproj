@@ -114,7 +114,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>KSeshKeyboardWindows.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src/KSeshKeyboardWindows.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -130,26 +130,26 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>KSeshKeyboardWindows.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src/KSeshKeyboardWindows.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp" />
+    <ClInclude Include="src\ClassFactory.hpp" />
+    <ClInclude Include="src\EditSession.hpp" />
+    <ClInclude Include="src\Processor.hpp" />
+    <ClInclude Include="src\resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="KSeshKeyboardWindows.def" />
+    <None Include="src\KSeshKeyboardWindows.def" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ClassFactory.hpp" />
-    <ClInclude Include="EditSession.hpp" />
-    <ClInclude Include="Processor.hpp" />
-    <ClInclude Include="resource.h" />
+    <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KSeshKeyboardWindows.rc" />
+    <Image Include="src\KSeshKeyboardWindows.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="KSeshKeyboardWindows.ico" />
+    <ResourceCompile Include="src\KSeshKeyboardWindows.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

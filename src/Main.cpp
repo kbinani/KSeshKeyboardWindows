@@ -227,6 +227,50 @@ static void UnregisterCategories() {
 }
 
 static BOOL RegisterProfiles() {
+  WCHAR achIconFile[MAX_PATH] = { '\0' };
+  DWORD cchA = 0;
+  cchA = GetModuleFileNameW(sDllInstanceHandle, achIconFile, MAX_PATH);
+  cchA = cchA >= MAX_PATH ? (MAX_PATH - 1) : cchA;
+  achIconFile[cchA] = '\0';
+
+  size_t lenOfDesc = 0;
+  HRESULT hr = StringCchLengthW(TEXTSERVICE_DESC, STRSAFE_MAX_CCH, &lenOfDesc);
+  if (FAILED(hr)) {
+    return FALSE;
+  }
+
+  ITfInputProcessorProfiles* profiles = nullptr;
+  hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER, IID_ITfInputProcessorProfiles, (void**)&profiles);
+  if (FAILED(hr)) {
+    return FALSE;
+  }
+  ITfInputProcessorProfilesEx* ex = nullptr;
+  hr = profiles->QueryInterface(IID_ITfInputProcessorProfilesEx, (void**)&ex);
+  if (FAILED(hr)) {
+    profiles->Release();
+    return FALSE;
+  }
+  hr = ex->AddLanguageProfile(
+    kClassId,
+    TEXTSERVICE_LANGID,
+    kProfileId,
+    TEXTSERVICE_DESC,
+    static_cast<UINT>(lenOfDesc),
+    achIconFile,
+    cchA,
+    (UINT)TEXTSERVICE_ICON_INDEX);
+  if (FAILED(hr)) {
+    ex->Release();
+    profiles->Release();
+    return FALSE;
+  }
+  hr = ex->SetLanguageProfileDisplayName(kClassId, TEXTSERVICE_LANGID, kProfileId, L"yo", wcslen(L"yo"), 0);
+  ex->Release();
+  profiles->Release();
+  return SUCCEEDED(hr);
+}
+
+static BOOL RegisterProfiles_() {
   ITfInputProcessorProfileMgr* pITfInputProcessorProfileMgr = nullptr;
   HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER, IID_ITfInputProcessorProfileMgr, (void**)&pITfInputProcessorProfileMgr);
   if (FAILED(hr) || !pITfInputProcessorProfileMgr) {
