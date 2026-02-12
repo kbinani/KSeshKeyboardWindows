@@ -28,7 +28,7 @@ static const WCHAR kRegInfoPrefixCLSID[] = L"CLSID\\";
 static const WCHAR TEXTSERVICE_DESC[] = L"Ancient Egyptian Transliteration";
 static const WCHAR kRegInfoKeyInProSvr32[] = L"InProcServer32";
 static const WCHAR kRegInfoKeyThreadModel[] = L"ThreadingModel";
-#define TEXTSERVICE_LANGID MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL)
+#define TEXTSERVICE_LANGID MAKELANGID(LANG_NEUTRAL, SUBLANG_CUSTOM_UNSPECIFIED)
 #define TEXTSERVICE_MODEL L"Apartment"
 #define TEXTSERVICE_ICON_INDEX -IDIS_KSESHKEYBOARD
 
