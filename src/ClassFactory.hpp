@@ -8,14 +8,20 @@ public:
   }
 
   STDMETHODIMP QueryInterface(REFIID riid, _Outptr_ void** ppvObj) override {
+    if (!ppvObj) {
+      return E_INVALIDARG;
+    }
     if (IsEqualIID(riid, IID_IClassFactory) || IsEqualIID(riid, IID_IUnknown)) {
-      *ppvObj = this;
+      *ppvObj = dynamic_cast<IClassFactory*>(this);
+    } else {
+      *ppvObj = nullptr;
+    }
+    if (*ppvObj) {
       DllAddRef();
       return NOERROR;
+    } else {
+      return E_NOINTERFACE;
     }
-    *ppvObj = nullptr;
-
-    return E_NOINTERFACE;
   }
 
   STDMETHODIMP_(ULONG) AddRef() override {

@@ -11,20 +11,18 @@ public:
   }
 
   STDMETHODIMP QueryInterface(REFIID riid, _Outptr_ void** ppvObj) override {
-    if (ppvObj == nullptr) {
+    if (!ppvObj) {
       return E_INVALIDARG;
     }
-    *ppvObj = nullptr;
     if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_ITfTextInputProcessor)) {
-      *ppvObj = (ITfTextInputProcessor*)this;
+      *ppvObj = dynamic_cast<ITfTextInputProcessor*>(this);
     } else if (IsEqualIID(riid, IID_ITfTextInputProcessorEx)) {
-      *ppvObj = (ITfTextInputProcessorEx*)this;
-    } else if (IsEqualIID(riid, IID_ITfThreadMgrEventSink)) {
-      *ppvObj = (ITfThreadMgrEventSink*)this;
+      *ppvObj = dynamic_cast<ITfTextInputProcessorEx*>(this);
     } else if (IsEqualIID(riid, IID_ITfKeyEventSink)) {
-      *ppvObj = (ITfKeyEventSink*)this;
+      *ppvObj = dynamic_cast<ITfKeyEventSink*>(this);
+    } else {
+      *ppvObj = nullptr;
     }
-
     if (*ppvObj) {
       AddRef();
       return S_OK;
@@ -46,7 +44,7 @@ public:
   }
 
   static HRESULT CreateInstance(_In_ IUnknown* pUnkOuter, REFIID riid, _Outptr_ void** ppvObj) {
-    if (ppvObj == nullptr) {
+    if (!ppvObj) {
       return E_INVALIDARG;
     }
     *ppvObj = nullptr;
@@ -57,9 +55,10 @@ public:
     if (processor == nullptr) {
       return E_OUTOFMEMORY;
     }
-    HRESULT result = processor->QueryInterface(riid, ppvObj);
-    processor->Release();
-    return result;
+    defer{
+      processor->Release();
+    };
+    return processor->QueryInterface(riid, ppvObj);
   }
 
   STDMETHODIMP Activate(ITfThreadMgr* pThreadMgr, TfClientId tfClientId) override {
@@ -102,17 +101,17 @@ public:
     }
 
     WCHAR ch = convertVKey((UINT)wParam);
-    static std::map<WCHAR, std::vector<WCHAR>> const sMapping = {
-      {L'D', {L'ḏ'}},
-      {L'T', {L'ṯ'}},
-      {L'A', {L'ꜣ'}},
-      {L'H', {L'ḥ'}},
-      {L'x', {L'ḫ'}},
-      {L'X', {L'ẖ'}},
-      {L'S', {L'š'}},
-      {L'a', {L'ꜥ'}},
-      {L'q', {L'ḳ'}},
-      {L'i', {L'ꞽ'}},
+    static std::map<WCHAR, std::wstring> const sMapping = {
+      {L'D', L"ḏ"},
+      {L'T', L"ṯ"},
+      {L'A', L"ꜣ"},
+      {L'H', L"ḥ"},
+      {L'x', L"ḫ"},
+      {L'X', L"ẖ"},
+      {L'S', L"š"},
+      {L'a', L"ꜥ"},
+      {L'q', L"ḳ"},
+      {L'i', L"ꞽ"},
     };
     auto found = sMapping.find(ch);
     if (found == sMapping.end()) {
@@ -125,9 +124,11 @@ public:
       if (!session) {
         return S_FALSE;
       }
+      defer{
+        session->Release();
+      };
       HRESULT hr = E_FAIL;
       hr = pContext->RequestEditSession(fClientId, session, TF_ES_ASYNCDONTCARE | TF_ES_READWRITE, &hr);
-      session->Release();
       return hr;
     }
   }
@@ -150,11 +151,11 @@ private:
     if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
       return FALSE;
     }
+    defer{
+      manager->Release();
+    };
 
-    HRESULT hr = manager->AdviseKeyEventSink(fClientId, (ITfKeyEventSink*)this, TRUE);
-    manager->Release();
-
-    return hr == S_OK;
+    return manager->AdviseKeyEventSink(fClientId, (ITfKeyEventSink*)this, TRUE) == S_OK;
   }
 
   void deinitKeyEventSink() {
@@ -162,9 +163,11 @@ private:
     if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
       return;
     }
+    defer{
+      manager->Release();
+    };
 
     manager->UnadviseKeyEventSink(fClientId);
-    manager->Release();
   }
 
   WCHAR convertVKey(UINT code) {

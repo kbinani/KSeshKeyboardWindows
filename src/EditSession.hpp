@@ -2,7 +2,7 @@
 
 class EditSession : public ITfEditSession {
 public:
-  EditSession(ITfContext* pContext, std::vector<WCHAR> const& str) : fContext(pContext), fRefCount(1), fString(str) {
+  EditSession(ITfContext* pContext, std::wstring const& str) : fContext(pContext), fRefCount(1), fString(str) {
     fContext->AddRef();
   }
 
@@ -33,18 +33,19 @@ public:
     if (fContext->GetSelection(ec, TF_DEFAULT_SELECTION, 1, &selection, &fetched) != S_OK) {
       return S_FALSE;
     }
-    if (selection.range->SetText(ec, 0, fString.data(), fString.size()) != S_OK) {
+    defer{
       selection.range->Release();
+    };
+    if (selection.range->SetText(ec, 0, fString.c_str(), fString.size()) != S_OK) {
       return S_FALSE;
     }
     selection.range->Collapse(ec, TF_ANCHOR_END);
     fContext->SetSelection(ec, 1, &selection);
-    selection.range->Release();
     return S_OK;
   }
 
 private:
   ITfContext* fContext;
   LONG fRefCount;
-  std::vector<WCHAR> fString;
+  std::wstring fString;
 };
