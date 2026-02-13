@@ -35,13 +35,8 @@ static const WCHAR kRegInfoKeyThreadModel[] = L"ThreadingModel";
 
 static const GUID kSupportCategories[] = {
   GUID_TFCAT_TIP_KEYBOARD,
-  GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER,
-  GUID_TFCAT_TIPCAP_UIELEMENTENABLED, 
   GUID_TFCAT_TIPCAP_SECUREMODE,
-  GUID_TFCAT_TIPCAP_COMLESS,
-  GUID_TFCAT_TIPCAP_INPUTMODECOMPARTMENT,
-  GUID_TFCAT_TIPCAP_IMMERSIVESUPPORT, 
-  GUID_TFCAT_TIPCAP_SYSTRAYSUPPORT,
+  GUID_TFCAT_TIPCAP_IMMERSIVESUPPORT,
 };
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid,  void** ppv);
@@ -54,6 +49,7 @@ static void UnsafeBuildGlobalObjects();
 static void DllAddRef();
 static void DllRelease();
 
+#include "Defer.hpp"
 #include "ClassFactory.hpp"
 #include "EditSession.hpp"
 #include "Processor.hpp"
@@ -114,9 +110,17 @@ static BOOL RegisterServer() {
   DWORD copiedStringLen = 0;
   HKEY regKeyHandle = nullptr;
   HKEY regSubkeyHandle = nullptr;
-  BOOL ret = FALSE;
   WCHAR achIMEKey[ARRAYSIZE(kRegInfoPrefixCLSID) + CLSID_STRLEN] = { '\0' };
   WCHAR achFileName[MAX_PATH] = { '\0' };
+
+  defer{
+    if (regSubkeyHandle) {
+      RegCloseKey(regSubkeyHandle);
+    }
+    if (regKeyHandle) {
+      RegCloseKey(regKeyHandle);
+    }
+  };
 
   if (!CLSIDToString(kClassId, achIMEKey + ARRAYSIZE(kRegInfoPrefixCLSID) - 1)) {
     return FALSE;
@@ -124,36 +128,25 @@ static BOOL RegisterServer() {
 
   memcpy(achIMEKey, kRegInfoPrefixCLSID, sizeof(kRegInfoPrefixCLSID) - sizeof(WCHAR));
 
-  if (RegCreateKeyExW(HKEY_CLASSES_ROOT, achIMEKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &regKeyHandle, &copiedStringLen) == ERROR_SUCCESS) {
-    if (RegSetValueExW(regKeyHandle, NULL, 0, REG_SZ, (const BYTE*)TEXTSERVICE_DESC, (_countof(TEXTSERVICE_DESC)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
-      goto Exit;
-    }
-
-    if (RegCreateKeyExW(regKeyHandle, kRegInfoKeyInProSvr32, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &regSubkeyHandle, &copiedStringLen) == ERROR_SUCCESS) {
-      copiedStringLen = GetModuleFileNameW(sDllInstanceHandle, achFileName, ARRAYSIZE(achFileName));
-      copiedStringLen = (copiedStringLen >= (MAX_PATH - 1)) ? MAX_PATH : (++copiedStringLen);
-      if (RegSetValueExW(regSubkeyHandle, NULL, 0, REG_SZ, (const BYTE*)achFileName, (copiedStringLen) * sizeof(WCHAR)) != ERROR_SUCCESS) {
-        goto Exit;
-      }
-      if (RegSetValueExW(regSubkeyHandle, kRegInfoKeyThreadModel, 0, REG_SZ, (const BYTE*)TEXTSERVICE_MODEL, (_countof(TEXTSERVICE_MODEL)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
-        goto Exit;
-      }
-
-      ret = TRUE;
-    }
+  if (RegCreateKeyExW(HKEY_CLASSES_ROOT, achIMEKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &regKeyHandle, &copiedStringLen) != ERROR_SUCCESS) {
+    return FALSE;
+  }
+  if (RegSetValueExW(regKeyHandle, NULL, 0, REG_SZ, (BYTE const*)TEXTSERVICE_DESC, (_countof(TEXTSERVICE_DESC)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
+    return FALSE;
+  }
+  if (RegCreateKeyExW(regKeyHandle, kRegInfoKeyInProSvr32, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &regSubkeyHandle, &copiedStringLen) != ERROR_SUCCESS) {
+    return FALSE;
+  }
+  copiedStringLen = GetModuleFileNameW(sDllInstanceHandle, achFileName, ARRAYSIZE(achFileName));
+  copiedStringLen = (copiedStringLen >= (MAX_PATH - 1)) ? MAX_PATH : (++copiedStringLen);
+  if (RegSetValueExW(regSubkeyHandle, NULL, 0, REG_SZ, (const BYTE*)achFileName, (copiedStringLen) * sizeof(WCHAR)) != ERROR_SUCCESS) {
+    return FALSE;
+  }
+  if (RegSetValueExW(regSubkeyHandle, kRegInfoKeyThreadModel, 0, REG_SZ, (const BYTE*)TEXTSERVICE_MODEL, (_countof(TEXTSERVICE_MODEL)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
+    return FALSE;
   }
 
-Exit:
-  if (regSubkeyHandle) {
-    RegCloseKey(regSubkeyHandle);
-    regSubkeyHandle = nullptr;
-  }
-  if (regKeyHandle) {
-    RegCloseKey(regKeyHandle);
-    regKeyHandle = nullptr;
-  }
-
-  return ret;
+  return TRUE;
 }
 
 static LONG RecurseDeleteKey(_In_ HKEY hParentKey, _In_ LPCTSTR lpszKey) {
@@ -194,89 +187,48 @@ static void UnregisterServer() {
 }
 
 static BOOL RegisterCategories() {
-  ITfCategoryMgr* pCategoryMgr = nullptr;
+  ITfCategoryMgr* manager = nullptr;
 
-  HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER, IID_ITfCategoryMgr, (void**)&pCategoryMgr);
-  if (FAILED(hr) || !pCategoryMgr) {
+  HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER, IID_ITfCategoryMgr, (void**)&manager);
+  if (FAILED(hr) || !manager) {
     return FALSE;
   }
 
   for (GUID guid : kSupportCategories) {
-    hr = pCategoryMgr->RegisterCategory(kClassId, guid, kClassId);
+    hr = manager->RegisterCategory(kClassId, guid, kClassId);
   }
 
-  pCategoryMgr->Release();
+  manager->Release();
 
-  return (hr == S_OK);
+  return hr == S_OK;
 }
 
 static void UnregisterCategories() {
-  ITfCategoryMgr* pCategoryMgr = nullptr;
+  ITfCategoryMgr* manager = nullptr;
 
-  HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER, IID_ITfCategoryMgr, (void**)&pCategoryMgr);
-  if (FAILED(hr) || !pCategoryMgr) {
+  HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER, IID_ITfCategoryMgr, (void**)&manager);
+  if (FAILED(hr) || !manager) {
     return;
   }
 
   for (GUID guid : kSupportCategories) {
-    pCategoryMgr->UnregisterCategory(kClassId, guid, kClassId);
+    manager->UnregisterCategory(kClassId, guid, kClassId);
   }
 
-  pCategoryMgr->Release();
+  manager->Release();
 
   return;
 }
 
 static BOOL RegisterProfiles() {
-  WCHAR achIconFile[MAX_PATH] = { '\0' };
-  DWORD cchA = 0;
-  cchA = GetModuleFileNameW(sDllInstanceHandle, achIconFile, MAX_PATH);
-  cchA = cchA >= MAX_PATH ? (MAX_PATH - 1) : cchA;
-  achIconFile[cchA] = '\0';
-
-  size_t lenOfDesc = 0;
-  HRESULT hr = StringCchLengthW(TEXTSERVICE_DESC, STRSAFE_MAX_CCH, &lenOfDesc);
-  if (FAILED(hr)) {
+  ITfInputProcessorProfileMgr* manager = nullptr;
+  HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER, IID_ITfInputProcessorProfileMgr, (void**)&manager);
+  if (FAILED(hr) || !manager) {
     return FALSE;
   }
-
-  ITfInputProcessorProfiles* profiles = nullptr;
-  hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER, IID_ITfInputProcessorProfiles, (void**)&profiles);
-  if (FAILED(hr)) {
-    return FALSE;
-  }
-  ITfInputProcessorProfilesEx* ex = nullptr;
-  hr = profiles->QueryInterface(IID_ITfInputProcessorProfilesEx, (void**)&ex);
-  if (FAILED(hr)) {
-    profiles->Release();
-    return FALSE;
-  }
-  hr = ex->AddLanguageProfile(
-    kClassId,
-    TEXTSERVICE_LANGID,
-    kProfileId,
-    TEXTSERVICE_DESC,
-    static_cast<UINT>(lenOfDesc),
-    achIconFile,
-    cchA,
-    (UINT)TEXTSERVICE_ICON_INDEX);
-  if (FAILED(hr)) {
-    ex->Release();
-    profiles->Release();
-    return FALSE;
-  }
-  hr = ex->SetLanguageProfileDisplayName(kClassId, TEXTSERVICE_LANGID, kProfileId, L"yo", wcslen(L"yo"), 0);
-  ex->Release();
-  profiles->Release();
-  return SUCCEEDED(hr);
-}
-
-static BOOL RegisterProfiles_() {
-  ITfInputProcessorProfileMgr* pITfInputProcessorProfileMgr = nullptr;
-  HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER, IID_ITfInputProcessorProfileMgr, (void**)&pITfInputProcessorProfileMgr);
-  if (FAILED(hr) || !pITfInputProcessorProfileMgr) {
-    return FALSE;
-  }
+  defer{
+    manager->Release();
+  };
 
   WCHAR achIconFile[MAX_PATH] = { '\0' };
   DWORD cchA = 0;
@@ -285,11 +237,10 @@ static BOOL RegisterProfiles_() {
   achIconFile[cchA] = '\0';
 
   size_t lenOfDesc = 0;
-  hr = StringCchLengthW(TEXTSERVICE_DESC, STRSAFE_MAX_CCH, &lenOfDesc);
-  if (hr != S_OK) {
-    goto Exit;
+  if (StringCchLengthW(TEXTSERVICE_DESC, STRSAFE_MAX_CCH, &lenOfDesc) != S_OK) {
+    return FALSE;
   }
-  hr = pITfInputProcessorProfileMgr->RegisterProfile(
+  hr = manager->RegisterProfile(
     kClassId,
     TEXTSERVICE_LANGID,
     kProfileId,
@@ -303,38 +254,20 @@ static BOOL RegisterProfiles_() {
     TRUE,
     0);
 
-  if (FAILED(hr)) {
-    goto Exit;
-  }
-
-Exit:
-  if (pITfInputProcessorProfileMgr) {
-    pITfInputProcessorProfileMgr->Release();
-  }
-
-  return (hr == S_OK);
+  return hr == S_OK;
 }
 
-void UnregisterProfiles(){
-  HRESULT hr = S_OK;
-
-  ITfInputProcessorProfileMgr *pITfInputProcessorProfileMgr = nullptr;
-  hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,    IID_ITfInputProcessorProfileMgr, (void**)&pITfInputProcessorProfileMgr);
-  if (FAILED(hr) || !pITfInputProcessorProfileMgr) {
-    goto Exit;
+void UnregisterProfiles() {
+  ITfInputProcessorProfileMgr* manager = nullptr;
+  HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER, IID_ITfInputProcessorProfileMgr, (void**)&manager);
+  if (FAILED(hr) || !manager) {
+    return;
   }
+  defer{
+    manager->Release();
+  };
 
-  hr = pITfInputProcessorProfileMgr->UnregisterProfile(kClassId, TEXTSERVICE_LANGID, kProfileId, 0);
-  if (FAILED(hr))  {
-    goto Exit;
-  }
-
-Exit:
-  if (pITfInputProcessorProfileMgr)  {
-    pITfInputProcessorProfileMgr->Release();
-  }
-
-  return;
+  manager->UnregisterProfile(kClassId, TEXTSERVICE_LANGID, kProfileId, 0);
 }
 
 BOOL APIENTRY DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID pvReserved) {

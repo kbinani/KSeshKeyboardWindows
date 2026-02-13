@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="src\ClassFactory.hpp" />
     <ClInclude Include="src\EditSession.hpp" />
+    <ClInclude Include="src\Defer.hpp" />
     <ClInclude Include="src\Processor.hpp" />
     <ClInclude Include="src\resource.h" />
   </ItemGroup>

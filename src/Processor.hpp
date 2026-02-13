@@ -146,25 +146,25 @@ public:
 
 private:
   bool initKeyEventSink() {
-    ITfKeystrokeMgr* pKeystrokeMgr = nullptr;
-    if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&pKeystrokeMgr))) {
+    ITfKeystrokeMgr* manager = nullptr;
+    if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
       return FALSE;
     }
 
-    HRESULT hr = pKeystrokeMgr->AdviseKeyEventSink(fClientId, (ITfKeyEventSink*)this, TRUE);
-    pKeystrokeMgr->Release();
+    HRESULT hr = manager->AdviseKeyEventSink(fClientId, (ITfKeyEventSink*)this, TRUE);
+    manager->Release();
 
     return hr == S_OK;
   }
 
   void deinitKeyEventSink() {
-    ITfKeystrokeMgr* pKeystrokeMgr = nullptr;
-    if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&pKeystrokeMgr))) {
+    ITfKeystrokeMgr* manager = nullptr;
+    if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
       return;
     }
 
-    pKeystrokeMgr->UnadviseKeyEventSink(fClientId);
-    pKeystrokeMgr->Release();
+    manager->UnadviseKeyEventSink(fClientId);
+    manager->Release();
   }
 
   WCHAR convertVKey(UINT code) {
