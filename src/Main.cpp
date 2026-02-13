@@ -11,6 +11,9 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <memory>
+#include <format>
+#include <chrono>
 
 #include "resource.h"
 
@@ -38,6 +41,7 @@ static GUID const kSupportCategories[] = {
   GUID_TFCAT_TIP_KEYBOARD,
   GUID_TFCAT_TIPCAP_SECUREMODE,
   GUID_TFCAT_TIPCAP_IMMERSIVESUPPORT,
+  GUID_TFCAT_TIPCAP_SYSTRAYSUPPORT,
 };
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid,  void** ppv);
@@ -51,8 +55,10 @@ static void DllAddRef();
 static void DllRelease();
 
 #include "Defer.hpp"
+#include "FileLogger.hpp"
 #include "ClassFactory.hpp"
 #include "EditSession.hpp"
+#include "LangBarItemButton.hpp"
 #include "Processor.hpp"
 
 static void DllAddRef() {

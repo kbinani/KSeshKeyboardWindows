@@ -2,7 +2,7 @@
 
 class Processor : public ITfTextInputProcessorEx, public ITfKeyEventSink {
 public:
-  Processor() : fRefCount(1), fThreadManager(nullptr), fClientId(TF_CLIENTID_NULL) {
+  Processor() : fRefCount(1), fThreadManager(nullptr), fClientId(TF_CLIENTID_NULL), fLangBarItemButton(nullptr) {
     DllAddRef();
   }
 
@@ -70,16 +70,21 @@ public:
     fThreadManager->AddRef();
     fClientId = tfClientId;
     fActivateFlags = dwFlags;
-    if (InitKeyEventSink()) {
-      return S_OK;
-    } else {
+    if (!InitKeyEventSink()) {
       Deactivate();
       return E_FAIL;
     }
+    if (!InitLangBarItemButton()) {
+      Deactivate();
+      FileLogger::Println("fail");
+      return E_FAIL;
+    }
+    return S_OK;
   }
 
   STDMETHODIMP Deactivate() override {
     DeinitKeyEventSink();
+    DeinitLangBarItemButton();
     if (fThreadManager) {
       fThreadManager->Release();
       fThreadManager = nullptr;
@@ -101,7 +106,7 @@ public:
       return E_INVALIDARG;
     }
 
-    WCHAR ch = convertVKey((UINT)wParam);
+    WCHAR ch = ConvertVKey((UINT)wParam);
     static std::map<WCHAR, std::wstring> const sMapping = {
       {L'D', L"ḏ"},
       {L'T', L"ṯ"},
@@ -171,7 +176,7 @@ private:
     manager->UnadviseKeyEventSink(fClientId);
   }
 
-  WCHAR convertVKey(UINT code) {
+  WCHAR ConvertVKey(UINT code) {
     UINT scanCode = 0;
     scanCode = MapVirtualKeyW(code, 0);
 
@@ -188,9 +193,51 @@ private:
     return 0;
   }
 
+  bool InitLangBarItemButton() {
+    FileLogger::Println(__FUNCTION__);
+    ITfLangBarItemMgr* manager = nullptr;
+    HRESULT hr = fThreadManager->QueryInterface(IID_ITfLangBarItemMgr, (void**)&manager);
+    if (FAILED(hr) || !manager) {
+      FileLogger::Println("1");
+      return false;
+    }
+    defer{
+      manager->Release();
+    };
+    auto button = new (std::nothrow) LangBarItemButton();
+    if (button == nullptr) {
+      FileLogger::Println("2");
+      return false;
+    }
+    fLangBarItemButton = button;
+    manager->AddItem(button);
+    if (FAILED(hr)) {
+      FileLogger::Println("3");
+    }
+    return hr == S_OK;
+  }
+
+  void DeinitLangBarItemButton() {
+    if (!fLangBarItemButton) {
+      return;
+    }
+    ITfLangBarItemMgr* manager = nullptr;
+    HRESULT hr = fThreadManager->QueryInterface(IID_ITfLangBarItemMgr, (void**)&manager);
+    if (FAILED(hr) || !manager) {
+      return;
+    }
+    defer{
+      manager->Release();
+    };
+    manager->RemoveItem(fLangBarItemButton);
+    fLangBarItemButton->Release();
+    fLangBarItemButton = nullptr;
+  }
+
 private:
   LONG fRefCount;
   ITfThreadMgr* fThreadManager;
   TfClientId fClientId;
   DWORD fActivateFlags;
+  LangBarItemButton* fLangBarItemButton;
 };
