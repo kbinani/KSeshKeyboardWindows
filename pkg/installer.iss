@@ -1,14 +1,17 @@
+#define app_version "1.0.0"
+#define app_url "https://github.com/kbinani/KSeshKeyboardWindows"
+
 [Setup]
-AppId={{8DC4614B-EFAC-40FA-BB6F-225890D62E28}
+AppId={{8DC4614B-EFAC-40FA-BB6F-225890D62E28}}
 AppName=KSesh IME
-AppVersion=1.0.0
+AppVersion={#app_version}
 AppPublisher=kbinani
-AppPublisherURL=https://github.com/kbinani/KSeshKeyboardWindows
-AppSupportURL=https://github.com/kbinani/KSeshKeyboardWindows
-AppUpdatesURL=https://github.com/kbinani/KSeshKeyboardWindows
+AppPublisherURL={#app_url}
+AppSupportURL={#app_url}
+AppUpdatesURL={#app_url}
 CreateAppDir=no
 PrivilegesRequired=admin
-OutputBaseFilename=KSeshIME
+OutputBaseFilename=KSeshIME-{#app_version}
 SolidCompression=yes
 WizardStyle=modern dynamic
 ArchitecturesInstallIn64BitMode=x64os
@@ -17,4 +20,4 @@ ArchitecturesInstallIn64BitMode=x64os
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\x64\Release\KSeshIME.dll"; DestDir: "{sys}"; Flags: regserver restartreplace
+Source: "..\x64\Release\KSeshIME.dll"; DestDir: "{sys}"; Flags: regserver restartreplace replacesameversion
