@@ -16,25 +16,25 @@
 
 static CRITICAL_SECTION sMutex;
 // {1E065A14-7F7F-4163-A7AB-BD2BB7BB721B}
-static const CLSID kClassId = { 0x1e065a14, 0x7f7f, 0x4163, { 0xa7, 0xab, 0xbd, 0x2b, 0xb7, 0xbb, 0x72, 0x1b } };
+static CLSID const kClassId = { 0x1e065a14, 0x7f7f, 0x4163, { 0xa7, 0xab, 0xbd, 0x2b, 0xb7, 0xbb, 0x72, 0x1b } };
 // {D9D2FAFE-0184-4304-AF6E-EB54AE63645B}
-static const GUID kProfileId = { 0xd9d2fafe, 0x184, 0x4304, { 0xaf, 0x6e, 0xeb, 0x54, 0xae, 0x63, 0x64, 0x5b } };
+static GUID const kProfileId = { 0xd9d2fafe, 0x184, 0x4304, { 0xaf, 0x6e, 0xeb, 0x54, 0xae, 0x63, 0x64, 0x5b } };
 
 static LONG sRefCount = -1;
 class ClassFactory;
-static ClassFactory *sClassFactoryObjects[1] = { nullptr };
+static ClassFactory *sClassFactoryObjects = nullptr;
 static HINSTANCE sDllInstanceHandle;
 
-static const WCHAR kRegInfoPrefixCLSID[] = L"CLSID\\";
+static WCHAR const kRegInfoPrefixCLSID[] = L"CLSID\\";
 #define CLSID_STRLEN (38)
-static const WCHAR TEXTSERVICE_DESC[] = L"Ancient Egyptian Transliteration";
-static const WCHAR kRegInfoKeyInProSvr32[] = L"InProcServer32";
-static const WCHAR kRegInfoKeyThreadModel[] = L"ThreadingModel";
+static WCHAR const TEXTSERVICE_DESC[] = L"Ancient Egyptian Transliteration";
+static WCHAR const kRegInfoKeyInProSvr32[] = L"InProcServer32";
+static WCHAR const kRegInfoKeyThreadModel[] = L"ThreadingModel";
 #define TEXTSERVICE_LANGID MAKELANGID(LANG_NEUTRAL, SUBLANG_CUSTOM_UNSPECIFIED)
 #define TEXTSERVICE_MODEL L"Apartment"
 #define TEXTSERVICE_ICON_INDEX -IDIS_KSESHKEYBOARD
 
-static const GUID kSupportCategories[] = {
+static GUID const kSupportCategories[] = {
   GUID_TFCAT_TIP_KEYBOARD,
   GUID_TFCAT_TIPCAP_SECUREMODE,
   GUID_TFCAT_TIPCAP_IMMERSIVESUPPORT,
@@ -62,7 +62,7 @@ static void DllAddRef() {
 static void DllRelease() {
   if (InterlockedDecrement(&sRefCount) < 0) {
     EnterCriticalSection(&sMutex);
-    if (sClassFactoryObjects[0] != nullptr) {
+    if (sClassFactoryObjects != nullptr) {
       UnsafeFreeGlobalObjects();
     }
     LeaveCriticalSection(&sMutex);
@@ -70,25 +70,25 @@ static void DllRelease() {
 }
 
 static void UnsafeBuildGlobalObjects() {
-  sClassFactoryObjects[0] = new (std::nothrow)ClassFactory(kClassId, Processor::CreateInstance);
+  sClassFactoryObjects = new (std::nothrow)ClassFactory(kClassId, Processor::CreateInstance);
 }
 
 static void UnsafeFreeGlobalObjects() {
-  ClassFactory *factory = sClassFactoryObjects[0];
+  ClassFactory *factory = sClassFactoryObjects;
   if (factory != nullptr) {
-    sClassFactoryObjects[0] = nullptr;
+    sClassFactoryObjects = nullptr;
     delete factory;
   }
 }
 
 static BOOL CLSIDToString(REFGUID refGUID, _Out_writes_(39) WCHAR* pCLSIDString) {
   WCHAR* pTemp = pCLSIDString;
-  const BYTE* pBytes = (const BYTE*)&refGUID;
+  BYTE const* pBytes = (BYTE const*)&refGUID;
 
-  static const BYTE GuidSymbols[] = {
+  BYTE const GuidSymbols[] = {
     3, 2, 1, 0, '-', 5, 4, '-', 7, 6, '-', 8, 9, '-', 10, 11, 12, 13, 14, 15
   };
-  static const WCHAR HexDigits[] = L"0123456789ABCDEF";
+  WCHAR const HexDigits[] = L"0123456789ABCDEF";
 
   DWORD j = 0;
   pTemp[j++] = L'{';
@@ -140,10 +140,10 @@ static BOOL RegisterServer() {
   }
   copiedStringLen = GetModuleFileNameW(sDllInstanceHandle, achFileName, ARRAYSIZE(achFileName));
   copiedStringLen = (copiedStringLen >= (MAX_PATH - 1)) ? MAX_PATH : (++copiedStringLen);
-  if (RegSetValueExW(regSubkeyHandle, NULL, 0, REG_SZ, (const BYTE*)achFileName, (copiedStringLen) * sizeof(WCHAR)) != ERROR_SUCCESS) {
+  if (RegSetValueExW(regSubkeyHandle, NULL, 0, REG_SZ, (BYTE const*)achFileName, (copiedStringLen) * sizeof(WCHAR)) != ERROR_SUCCESS) {
     return FALSE;
   }
-  if (RegSetValueExW(regSubkeyHandle, kRegInfoKeyThreadModel, 0, REG_SZ, (const BYTE*)TEXTSERVICE_MODEL, (_countof(TEXTSERVICE_MODEL)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
+  if (RegSetValueExW(regSubkeyHandle, kRegInfoKeyThreadModel, 0, REG_SZ, (BYTE const*)TEXTSERVICE_MODEL, (_countof(TEXTSERVICE_MODEL)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
     return FALSE;
   }
 
@@ -290,16 +290,16 @@ BOOL APIENTRY DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID pvReserved) {
 }
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv) {
-  if (sClassFactoryObjects[0] == nullptr) {
+  if (sClassFactoryObjects == nullptr) {
     EnterCriticalSection(&sMutex);
-    if (sClassFactoryObjects[0] == nullptr) {
+    if (sClassFactoryObjects == nullptr) {
       UnsafeBuildGlobalObjects();
     }
     LeaveCriticalSection(&sMutex);
   }
   if (IsEqualIID(riid, IID_IClassFactory) || IsEqualIID(riid, IID_IUnknown)) {
-    if (nullptr != sClassFactoryObjects[0] && IsEqualGUID(rclsid, sClassFactoryObjects[0]->fClassId)) {
-      *ppv = (void*)sClassFactoryObjects[0];
+    if (nullptr != sClassFactoryObjects && sClassFactoryObjects->HasClassId(rclsid)) {
+      *ppv = (void*)sClassFactoryObjects;
       DllAddRef();
       return NOERROR;
     }

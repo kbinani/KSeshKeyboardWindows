@@ -36,7 +36,7 @@ public:
     defer{
       selection.range->Release();
     };
-    if (selection.range->SetText(ec, 0, fString.c_str(), fString.size()) != S_OK) {
+    if (selection.range->SetText(ec, 0, fString.c_str(), (LONG)fString.size()) != S_OK) {
       return S_FALSE;
     }
     selection.range->Collapse(ec, TF_ANCHOR_END);

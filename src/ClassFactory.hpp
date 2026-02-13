@@ -47,9 +47,11 @@ public:
     return S_OK;
   }
 
-public:
-  REFCLSID fClassId;
+  bool HasClassId(REFCLSID other) const {
+    return IsEqualGUID(other, fClassId);
+  }
 
 private:
+  REFCLSID fClassId;
   HRESULT (*fCreateInstance)(_In_opt_ IUnknown* pUnkOuter, _In_ REFIID riid, _COM_Outptr_ void** ppvObj);
 };

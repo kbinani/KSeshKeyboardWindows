@@ -70,15 +70,16 @@ public:
     fThreadManager->AddRef();
     fClientId = tfClientId;
     fActivateFlags = dwFlags;
-    if (!initKeyEventSink()) {
+    if (InitKeyEventSink()) {
+      return S_OK;
+    } else {
       Deactivate();
       return E_FAIL;
     }
-    return S_OK;
   }
 
   STDMETHODIMP Deactivate() override {
-    deinitKeyEventSink();
+    DeinitKeyEventSink();
     if (fThreadManager) {
       fThreadManager->Release();
       fThreadManager = nullptr;
@@ -146,7 +147,7 @@ public:
   }
 
 private:
-  bool initKeyEventSink() {
+  bool InitKeyEventSink() {
     ITfKeystrokeMgr* manager = nullptr;
     if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
       return FALSE;
@@ -158,7 +159,7 @@ private:
     return manager->AdviseKeyEventSink(fClientId, (ITfKeyEventSink*)this, TRUE) == S_OK;
   }
 
-  void deinitKeyEventSink() {
+  void DeinitKeyEventSink() {
     ITfKeystrokeMgr* manager = nullptr;
     if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
       return;
