@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(_DEBUG)
-
 class FileLogger {
 public:
   FileLogger() {
@@ -10,6 +8,7 @@ public:
   }
 
   void println(std::string const& s) {
+#if defined(_DEBUG)
     FILE* fp = nullptr;
     errno_t err = fopen_s(&fp, fFilePath.c_str(), "a+b");
     if (!fp) {
@@ -19,6 +18,7 @@ public:
       fclose(fp);
     };
     fprintf(fp, "%s\n", s.c_str());
+#endif
   }
 
   static void Println(std::string const& s) {
@@ -29,5 +29,3 @@ public:
 private:
   std::string fFilePath;
 };
-
-#endif
