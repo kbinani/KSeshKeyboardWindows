@@ -70,6 +70,7 @@ public:
     fThreadManager->AddRef();
     fClientId = tfClientId;
     fActivateFlags = dwFlags;
+    SyncSettings();
     if (!InitKeyEventSink()) {
       Deactivate();
       return E_FAIL;
@@ -94,6 +95,7 @@ public:
   }
 
   STDMETHODIMP OnSetFocus(BOOL fForeground) override {
+    FileLogger::Println(__FUNCTION__);
     return S_OK;
   }
 
@@ -107,20 +109,8 @@ public:
     }
 
     WCHAR ch = ConvertVKey((UINT)wParam);
-    static std::map<WCHAR, std::wstring> const sMapping = {
-      {L'D', L"ḏ"},
-      {L'T', L"ṯ"},
-      {L'A', L"ꜣ"},
-      {L'H', L"ḥ"},
-      {L'x', L"ḫ"},
-      {L'X', L"ẖ"},
-      {L'S', L"š"},
-      {L'a', L"ꜥ"},
-      {L'q', L"ḳ"},
-      {L'i', L"ꞽ"},
-    };
-    auto found = sMapping.find(ch);
-    if (found == sMapping.end()) {
+    auto found = fMap.find(ch);
+    if (found == fMap.end()) {
       *pIsEaten = FALSE;
       return S_OK;
     } else {
@@ -152,6 +142,43 @@ public:
   }
 
 private:
+  void SyncSettings() {
+    std::map<WCHAR, std::wstring> map = {
+      {L'D', L"ḏ"},
+      {L'T', L"ṯ"},
+      {L'A', L"ꜣ"},
+      {L'H', L"ḥ"},
+      {L'x', L"ḫ"},
+      {L'X', L"ẖ"},
+      {L'S', L"š"},
+      {L'a', L"ꜥ"},
+      {L'q', L"ḳ"},
+      {L'i', L"ꞽ"},
+    };
+    if (LoadRegistryDWORD(kRegistrySettingKeyReplaceQ, 1) == 0) {
+      map.erase('q');
+    }
+    switch (LoadRegistryDWORD(kRegistrySettingKeyIType, 0)) {
+    case 1:
+      map[L'i'] = L"i͗";
+      break;
+    case 2:
+      map[L'i'] = L"i҆";
+      break;
+    case 3:
+      map[L'i'] = L"i̯";
+      break;
+    case 4:
+      map[L'i'] = L"ꞽ";
+      break;
+    case 0:
+    default:
+      map[L'i'] = L"ı͗";
+      break;
+    }
+    fMap = map;
+  }
+
   bool InitKeyEventSink() {
     ITfKeystrokeMgr* manager = nullptr;
     if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
@@ -203,7 +230,9 @@ private:
     defer{
       manager->Release();
     };
-    auto button = new (std::nothrow) LangBarItemButton(GUID_LBI_INPUTMODE);
+    auto button = new (std::nothrow) LangBarItemButton(GUID_LBI_INPUTMODE, [this]() {
+      SyncSettings();
+    });
     if (button == nullptr) {
       return false;
     }
@@ -236,4 +265,5 @@ private:
   TfClientId fClientId;
   DWORD fActivateFlags;
   LangBarItemButton* fLangBarItemButton;
+  std::map<WCHAR, std::wstring> fMap;
 };

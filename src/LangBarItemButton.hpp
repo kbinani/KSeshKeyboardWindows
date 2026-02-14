@@ -2,12 +2,12 @@
 
 class LangBarItemButton : public ITfLangBarItemButton, public ITfSource {
 public:
-  explicit LangBarItemButton(GUID id)
+  explicit LangBarItemButton(GUID id, std::function<void()> onChange)
     : fRefCount(1)
     , fId(id)
     , fLangBarItemSink(nullptr)
-    , fDescription(L"Settings")
-    , fMenuWindow(nullptr) {
+    , fMenuWindow(nullptr)
+    , fOnChange(onChange) {
     DllAddRef();
     InitMenuWindow();
   }
@@ -57,7 +57,7 @@ public:
     pInfo->guidItem = fId;
     pInfo->dwStyle = TF_LBI_STYLE_BTN_BUTTON | TF_LBI_STYLE_SHOWNINTRAY;
     pInfo->ulSort = 0;
-    StringCchCopyW(pInfo->szDescription, ARRAYSIZE(pInfo->szDescription), fDescription.c_str());
+    StringCchCopyW(pInfo->szDescription, ARRAYSIZE(pInfo->szDescription), L"");
     return S_OK;
   }
 
@@ -92,12 +92,12 @@ public:
       TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
       pt.x,
       pt.y,
-      fMenuWindow,
+      GetFocus(),
       nullptr
     );
     DestroyMenu(menu);
     if (command == 1) {
-      MessageBoxW(nullptr, L"yo", L"Info", MB_OK);
+      DialogBoxParamW(sDllInstanceHandle, MAKEINTRESOURCEW(IDD_SETTINGS_DIALOG), nullptr, SettingsDialogProc, reinterpret_cast<LPARAM>(this));
     }
     return S_OK;
   }
@@ -128,7 +128,7 @@ public:
 
   STDMETHODIMP GetText(_Out_ BSTR* pbstrText) override {
     FileLogger::Println(__FUNCTION__);
-    *pbstrText = SysAllocString(fDescription.c_str());
+    *pbstrText = SysAllocString(L"Settings");
 
     return (*pbstrText == nullptr) ? E_OUTOFMEMORY : S_OK;
   }
@@ -171,6 +171,7 @@ public:
     return S_OK;
   }
 
+private:
   void InitMenuWindow() {
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
@@ -191,11 +192,61 @@ public:
     );
   }
 
+  static INT_PTR CALLBACK SettingsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+    case WM_INITDIALOG: {
+      auto t = reinterpret_cast<LangBarItemButton*>(lParam);
+      SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(t));
+
+      SetDlgItemTextW(hwnd, 2000, L"ı͗: ı + U+0357");
+      SetDlgItemTextW(hwnd, 2001, L"i͗: i + U+0357");
+      SetDlgItemTextW(hwnd, 2002, L"i҆: i + U+0486");
+      SetDlgItemTextW(hwnd, 2003, L"i̯: i + U+032F");
+      SetDlgItemTextW(hwnd, 2004, L"ꞽ: U+A7BD");
+      SetDlgItemTextW(hwnd, 3001, L"Replace 'q' with 'ḳ'");
+
+      DWORD replaceQ = LoadRegistryDWORD(kRegistrySettingKeyReplaceQ, 1);
+      CheckDlgButton(hwnd, 3001, replaceQ == 0 ? BST_UNCHECKED : BST_CHECKED);
+      DWORD iType = LoadRegistryDWORD(kRegistrySettingKeyIType, 0);
+      CheckRadioButton(hwnd, 2000, 2004, 2000 + iType);
+      return TRUE;
+    }
+    case WM_COMMAND:
+      switch (LOWORD(wParam)) {
+      case IDOK: {
+        LangBarItemButton *ptr =  reinterpret_cast<LangBarItemButton*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+        for (int i = 2000; i <= 2004; i++) {
+          if (IsDlgButtonChecked(hwnd, i) == BST_CHECKED) {
+            SaveRegistryDWORD(kRegistrySettingKeyReplaceQ, i - 2000);
+          }
+        }
+        if (IsDlgButtonChecked(hwnd, 3001) == BST_CHECKED) {
+          SaveRegistryDWORD(kRegistrySettingKeyIType, 1);
+        } else {
+          SaveRegistryDWORD(kRegistrySettingKeyIType, 0);
+        }
+        if (ptr->fOnChange) {
+          ptr->fOnChange();
+        }
+        EndDialog(hwnd, IDOK);
+        break;
+      }
+      case IDCANCEL:
+        EndDialog(hwnd, IDCANCEL);
+        break;
+      default:
+        break;
+      }
+      return TRUE;
+    }
+    return FALSE;
+  }
+
 private:
   LONG fRefCount;
   GUID fId;
   DWORD const fCookie = 0;
   ITfLangBarItemSink* fLangBarItemSink;
-  std::wstring const fDescription;
   HWND fMenuWindow;
+  std::function<void()> fOnChange;
 };

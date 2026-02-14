@@ -52,7 +52,60 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDIS_KSESHKEYBOARD               ICON                    "KSeshKeyboardWindows.ico"
+IDIS_KSESHKEYBOARD      ICON                    "KSeshKeyboardWindows.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SETTINGS_DIALOG DIALOGEX 0, 0, 250, 157
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_NOACTIVATE
+CAPTION "Dialog"
+FONT 9, "MS Shell Dlg", 400, 0, 0x80
+BEGIN
+    GROUPBOX        "Character code for 'i' key:",-1,10,10,230,93
+    CONTROL         "2001",2000,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,21,24,60,12
+    CONTROL         "2002",2001,"Button",BS_AUTORADIOBUTTON,21,39,60,12
+    CONTROL         "2003",2002,"Button",BS_AUTORADIOBUTTON,21,54,60,12
+    CONTROL         "2004",2003,"Button",BS_AUTORADIOBUTTON,21,69,60,12
+    CONTROL         "2005",2004,"Button",BS_AUTORADIOBUTTON,21,84,60,12
+    CONTROL         "3001",3001,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,112,80,12
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,193,136,50,14
+    PUSHBUTTON      "OK",IDOK,130,136,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_SETTINGS_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 150
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_SETTINGS_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 #endif    // Japanese (Japan) resources
 /////////////////////////////////////////////////////////////////////////////

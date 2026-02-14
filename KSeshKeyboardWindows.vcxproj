@@ -146,6 +146,7 @@
     <ClInclude Include="src\FileLogger.hpp" />
     <ClInclude Include="src\LangBarItemButton.hpp" />
     <ClInclude Include="src\Processor.hpp" />
+    <ClInclude Include="src\RegKey.hpp" />
     <ClInclude Include="src\resource.h" />
   </ItemGroup>
   <ItemGroup>
