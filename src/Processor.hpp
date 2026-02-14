@@ -175,6 +175,9 @@ private:
     case 3:
       map[L'i'] = L"i̯";
       break;
+    case 5:
+      map.erase(L'i');
+      break;
     case 4:
     default:
       map[L'i'] = L"ꞽ";

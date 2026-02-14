@@ -221,6 +221,7 @@ private:
       SetDlgItemTextW(hwnd, 2002, L"i҆: i + U+0486");
       SetDlgItemTextW(hwnd, 2003, L"i̯: i + U+032F");
       SetDlgItemTextW(hwnd, 2004, L"ꞽ: U+A7BD");
+      SetDlgItemTextW(hwnd, 2005, L"i: U+0069 (unchanged)");
       SetDlgItemTextW(hwnd, 3001, L"Replace q (small) with ḳ: U+1E33");
       SetDlgItemTextW(hwnd, 4001, L"Replace Y (capital) with ï: U+00EF");
 
@@ -229,14 +230,14 @@ private:
       DWORD replaceY = LoadRegistryDWORD(kRegistrySettingReplaceYKey, kRegistrySettingReplaceYDefault);
       CheckDlgButton(hwnd, 4001, replaceY == 0 ? BST_UNCHECKED : BST_CHECKED);
       DWORD iType = LoadRegistryDWORD(kRegistrySettingITypeKey, kRegistrySettingITypeDefault);
-      CheckRadioButton(hwnd, 2000, 2004, 2000 + iType);
+      CheckRadioButton(hwnd, 2000, 2005, 2000 + iType);
       return TRUE;
     }
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
       case IDOK: {
         LangBarItemButton *ptr =  reinterpret_cast<LangBarItemButton*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
-        for (int i = 2000; i <= 2004; i++) {
+        for (int i = 2000; i <= 2005; i++) {
           if (IsDlgButtonChecked(hwnd, i) == BST_CHECKED) {
             SaveRegistryDWORD(kRegistrySettingITypeKey, i - 2000);
           }
