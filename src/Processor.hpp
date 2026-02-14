@@ -154,11 +154,18 @@ private:
       {L'a', L"ꜥ"},
       {L'q', L"ḳ"},
       {L'i', L"ꞽ"},
+      {L'y', L"ï"},
     };
-    if (LoadRegistryDWORD(kRegistrySettingKeyReplaceQ, 1) == 0) {
-      map.erase('q');
+    if (LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault) == 0) {
+      map.erase(L'q');
     }
-    switch (LoadRegistryDWORD(kRegistrySettingKeyIType, 0)) {
+    if (LoadRegistryDWORD(kRegistrySettingReplaceYKey, kRegistrySettingReplaceYDefault) == 0) {
+      map.erase(L'y');
+    }
+    switch (LoadRegistryDWORD(kRegistrySettingITypeKey, kRegistrySettingITypeDefault)) {
+    case 0:
+      map[L'i'] = L"ı͗";
+      break;
     case 1:
       map[L'i'] = L"i͗";
       break;
@@ -169,11 +176,8 @@ private:
       map[L'i'] = L"i̯";
       break;
     case 4:
-      map[L'i'] = L"ꞽ";
-      break;
-    case 0:
     default:
-      map[L'i'] = L"ı͗";
+      map[L'i'] = L"ꞽ";
       break;
     }
     fMap = map;

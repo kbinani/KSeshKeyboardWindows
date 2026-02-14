@@ -204,10 +204,13 @@ private:
       SetDlgItemTextW(hwnd, 2003, L"i̯: i + U+032F");
       SetDlgItemTextW(hwnd, 2004, L"ꞽ: U+A7BD");
       SetDlgItemTextW(hwnd, 3001, L"Replace 'q' with 'ḳ'");
+      SetDlgItemTextW(hwnd, 4001, L"Replace 'y' with 'ï'");
 
-      DWORD replaceQ = LoadRegistryDWORD(kRegistrySettingKeyReplaceQ, 1);
+      DWORD replaceQ = LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault);
       CheckDlgButton(hwnd, 3001, replaceQ == 0 ? BST_UNCHECKED : BST_CHECKED);
-      DWORD iType = LoadRegistryDWORD(kRegistrySettingKeyIType, 0);
+      DWORD replaceY = LoadRegistryDWORD(kRegistrySettingReplaceYKey, kRegistrySettingReplaceYDefault);
+      CheckDlgButton(hwnd, 4001, replaceY == 0 ? BST_UNCHECKED : BST_CHECKED);
+      DWORD iType = LoadRegistryDWORD(kRegistrySettingITypeKey, kRegistrySettingITypeDefault);
       CheckRadioButton(hwnd, 2000, 2004, 2000 + iType);
       return TRUE;
     }
@@ -217,14 +220,13 @@ private:
         LangBarItemButton *ptr =  reinterpret_cast<LangBarItemButton*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
         for (int i = 2000; i <= 2004; i++) {
           if (IsDlgButtonChecked(hwnd, i) == BST_CHECKED) {
-            SaveRegistryDWORD(kRegistrySettingKeyReplaceQ, i - 2000);
+            SaveRegistryDWORD(kRegistrySettingITypeKey, i - 2000);
           }
         }
-        if (IsDlgButtonChecked(hwnd, 3001) == BST_CHECKED) {
-          SaveRegistryDWORD(kRegistrySettingKeyIType, 1);
-        } else {
-          SaveRegistryDWORD(kRegistrySettingKeyIType, 0);
-        }
+        auto replaceQ = IsDlgButtonChecked(hwnd, 3001) == BST_CHECKED;
+        SaveRegistryDWORD(kRegistrySettingReplaceQKey, replaceQ ? 1 : 0);
+        auto replaceY = IsDlgButtonChecked(hwnd, 4001) == BST_CHECKED;
+        SaveRegistryDWORD(kRegistrySettingReplaceYKey, replaceY ? 1 : 0);
         if (ptr->fOnChange) {
           ptr->fOnChange();
         }

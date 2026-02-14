@@ -2,8 +2,13 @@
 
 constexpr WCHAR kRegistryPath[] = L"Software\\KSeshIME\\Settings";
 
-constexpr WCHAR kRegistrySettingKeyReplaceQ[] = L"ReplaceQ";
-constexpr WCHAR kRegistrySettingKeyIType[] = L"IType";
+constexpr WCHAR kRegistrySettingReplaceQKey[] = L"ReplaceQ";
+constexpr WCHAR kRegistrySettingReplaceYKey[] = L"ReplaceY";
+constexpr WCHAR kRegistrySettingITypeKey[] = L"IType";
+
+constexpr DWORD kRegistrySettingReplaceQDefault = 0;
+constexpr DWORD kRegistrySettingReplaceYDefault = 1;
+constexpr DWORD kRegistrySettingITypeDefault = 4;
 
 static bool SaveRegistryDWORD(LPCWSTR valueName, DWORD value) {
   HKEY hKey;
