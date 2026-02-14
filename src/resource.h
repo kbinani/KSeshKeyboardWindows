@@ -1,7 +1,11 @@
 //{{NO_DEPENDENCIES}}
 
-#define IDIS_KSESHKEYBOARD              12
-#define IDD_SETTINGS_DIALOG             102
+#define IDIS_ICON_BRAND                  12
+#define IDIS_ICON_TRANSLITERATION_BLACK  13
+#define IDIS_ICON_TRANSLITERATION_WHITE  14
+#define IDIS_ICON_HIEROGLYPH_BLACK       15
+#define IDIS_ICON_HIEROGLYPH_WHITE       16
+#define IDD_SETTINGS_DIALOG              102
 
 // Next default values for new objects
 // 

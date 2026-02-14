@@ -51,7 +51,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="src\KSeshKeyboardWindows.ico">
+    <Image Include="img\brand.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="img\hieroglyph_black.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="img\hieroglyph_white.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="img\transliteration_black.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="img\transliteration_white.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

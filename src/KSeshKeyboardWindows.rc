@@ -52,7 +52,11 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDIS_KSESHKEYBOARD      ICON                    "KSeshKeyboardWindows.ico"
+IDIS_ICON_BRAND ICON                  "..\\img\\brand.ico"
+IDIS_ICON_TRANSLITERATION_BLACK ICON  "..\\img\\transliteration_black.ico"
+IDIS_ICON_TRANSLITERATION_WHITE ICON  "..\\img\\transliteration_white.ico"
+IDIS_ICON_HIEROGLYPH_BLACK ICON       "..\\img\\hieroglyph_black.ico"
+IDIS_ICON_HIEROGLYPH_WHITE ICON       "..\\img\\hieroglyph_white.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

@@ -156,7 +156,11 @@
     <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="src\KSeshKeyboardWindows.ico" />
+    <Image Include="img\brand.ico" />
+    <Image Include="img\hieroglyph_black.ico" />
+    <Image Include="img\hieroglyph_white.ico" />
+    <Image Include="img\transliteration_black.ico" />
+    <Image Include="img\transliteration_white.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\KSeshKeyboardWindows.rc" />

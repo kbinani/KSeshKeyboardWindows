@@ -4,7 +4,7 @@ class FileLogger {
 public:
   FileLogger() {
     int64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    fFilePath = std::format("C:\\Users\\User\\AppData\\Local\\Temp\\SampleIME_{}.log", timestamp);
+    fFilePath = std::format("C:\\Users\\User\\AppData\\Local\\Temp\\KSeshIME_{}.log", timestamp);
   }
 
   void println(std::string const& s) {

@@ -115,9 +115,11 @@ public:
     if (!phIcon) {
       return E_INVALIDARG;
     }
+    bool dark = IsInDarkMode();
+    WORD icon = dark ? IDIS_ICON_TRANSLITERATION_WHITE : IDIS_ICON_TRANSLITERATION_BLACK;
     *phIcon = (HICON)LoadImageW(
       sDllInstanceHandle,
-      MAKEINTRESOURCEW(IDIS_KSESHKEYBOARD),
+      MAKEINTRESOURCEW(icon),
       IMAGE_ICON,
       24,
       24,
@@ -172,10 +174,25 @@ public:
   }
 
 private:
+  static bool IsInDarkMode() {
+    DWORD value = 1;
+    DWORD size = sizeof(value);
+    RegGetValueW(
+      HKEY_CURRENT_USER,
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+      L"AppsUseLightTheme",
+      RRF_RT_REG_DWORD,
+      nullptr,
+      &value,
+      &size
+   );
+    return value == 0;
+  }
+
   void InitMenuWindow() {
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
-    wc.lpfnWndProc = DefWindowProcW;
+    wc.lpfnWndProc = MenuWindowProc;
     wc.hInstance = sDllInstanceHandle;
     wc.lpszClassName = L"KSeshMenuWindow";
     RegisterClassExW(&wc);
@@ -185,11 +202,12 @@ private:
       L"",
       WS_POPUP,
       0, 0, 0, 0,
-      HWND_MESSAGE,
+      nullptr,
       nullptr,
       sDllInstanceHandle,
       nullptr
     );
+    SetWindowLongPtrW(fMenuWindow, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
   }
 
   static INT_PTR CALLBACK SettingsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -242,6 +260,18 @@ private:
       return TRUE;
     }
     return FALSE;
+  }
+
+  static LRESULT CALLBACK MenuWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_SETTINGCHANGE) {
+      if (lParam && wcscmp((LPCWSTR)lParam, L"ImmersiveColorSet") == 0) {
+        auto* button = reinterpret_cast<LangBarItemButton*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+        if (button && button->fLangBarItemSink) {
+          button->fLangBarItemSink->OnUpdate(TF_LBI_ICON);
+        }
+      }
+    }
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
   }
 
 private:

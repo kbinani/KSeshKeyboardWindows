@@ -35,9 +35,8 @@ static WCHAR const kRegInfoPrefixCLSID[] = L"CLSID\\";
 static WCHAR const TEXTSERVICE_DESC[] = L"Ancient Egyptian Transliteration";
 static WCHAR const kRegInfoKeyInProSvr32[] = L"InProcServer32";
 static WCHAR const kRegInfoKeyThreadModel[] = L"ThreadingModel";
-#define TEXTSERVICE_LANGID MAKELANGID(LANG_NEUTRAL, SUBLANG_CUSTOM_UNSPECIFIED)
+#define TEXTSERVICE_LANGID MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT)
 #define TEXTSERVICE_MODEL L"Apartment"
-#define TEXTSERVICE_ICON_INDEX -IDIS_KSESHKEYBOARD
 
 static GUID const kSupportCategories[] = {
   GUID_TFCAT_TIP_KEYBOARD,
@@ -282,7 +281,7 @@ static BOOL RegisterProfiles() {
     static_cast<ULONG>(lenOfDesc),
     achIconFile,
     cchA,
-    (UINT)TEXTSERVICE_ICON_INDEX,
+    (UINT)(-IDIS_ICON_BRAND),
     NULL,
     0,
     TRUE,
