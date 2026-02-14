@@ -198,35 +198,18 @@ private:
     ITfLangBarItemMgr* manager = nullptr;
     HRESULT hr = fThreadManager->QueryInterface(IID_ITfLangBarItemMgr, (void**)&manager);
     if (FAILED(hr) || !manager) {
-      FileLogger::Println("1");
       return false;
     }
     defer{
       manager->Release();
     };
-    auto button = new (std::nothrow) LangBarItemButton();
+    auto button = new (std::nothrow) LangBarItemButton(GUID_LBI_INPUTMODE);
     if (button == nullptr) {
-      FileLogger::Println("2");
       return false;
     }
     fLangBarItemButton = button;
     manager->RemoveItem(button);
-    FileLogger::Println("3");
     hr = manager->AddItem(button);
-    FileLogger::Println("4");
-    if (FAILED(hr)) {
-      FileLogger::Println("5");
-      if (hr == E_FAIL) {
-        FileLogger::Println("E_FAIL");
-      } else if (hr == E_INVALIDARG) {
-        FileLogger::Println("E_INVALIDARG");
-      } else if (hr == E_OUTOFMEMORY) {
-        FileLogger::Println("E_OUTOFMEMORY");
-      } else {
-        FileLogger::Println("unknown");
-      }
-    }
-    FileLogger::Println(hr == S_OK ? "6: S_OK" : "6: not S_OK");
     return hr == S_OK;
   }
 

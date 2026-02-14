@@ -2,7 +2,11 @@
 
 class LangBarItemButton : public ITfLangBarItemButton, public ITfSource {
 public:
-  LangBarItemButton() : fRefCount(1), fId({ 0x5e0418, 0xaa4d, 0x45dd, { 0xa0, 0x65, 0x49, 0x42, 0x11, 0xe2, 0x8e, 0xe5 } }), fLangBarItemSink(nullptr) {
+  explicit LangBarItemButton(GUID id)
+    : fRefCount(1)
+    , fId(id)
+    , fLangBarItemSink(nullptr)
+    , fDescription(L"Settings") {
     DllAddRef();
   }
 
@@ -14,13 +18,6 @@ public:
     if (!ppvObj) {
       return E_INVALIDARG;
     }
-    FileLogger::Println(std::format("{}: rrid={}",
-      __FUNCTION__,
-      StringFromGUID(riid)));
-    FileLogger::Println("    IID_IUnknown=" + StringFromGUID(IID_IUnknown));
-    FileLogger::Println("    IID_ITfLangBarItem=" + StringFromGUID(IID_ITfLangBarItem));
-    FileLogger::Println("    IID_ITfLangBarItemButton=" + StringFromGUID(IID_ITfLangBarItemButton));
-    FileLogger::Println("    IID_ITfSource=" + StringFromGUID(IID_ITfSource));
     *ppvObj = nullptr;
     if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_ITfLangBarItem) || IsEqualIID(riid, IID_ITfLangBarItemButton)) {
       *ppvObj = dynamic_cast<ITfLangBarItemButton*>(this);
@@ -52,12 +49,10 @@ public:
       return E_INVALIDARG;
     }
     pInfo->clsidService = kClassId;
-    //pInfo->guidItem = GUID_LBI_SAPILAYR_CFGMENUBUTTON;// GUID_LBI_INPUTMODE;//fId;
-    //pInfo->guidItem = GUID_LBI_INPUTMODE;//fId;
     pInfo->guidItem = fId;
-    pInfo->dwStyle = TF_LBI_STYLE_BTN_MENU;// | TF_LBI_STYLE_SHOWNINTRAY;
+    pInfo->dwStyle = TF_LBI_STYLE_BTN_BUTTON | TF_LBI_STYLE_SHOWNINTRAY;
     pInfo->ulSort = 0;
-    StringCchCopyW(pInfo->szDescription, ARRAYSIZE(pInfo->szDescription), L"Settings");
+    StringCchCopyW(pInfo->szDescription, ARRAYSIZE(pInfo->szDescription), fDescription.c_str());
     return S_OK;
   }
 
@@ -98,12 +93,26 @@ public:
 
   STDMETHODIMP GetIcon(_Out_ HICON* phIcon) override {
     FileLogger::Println(__FUNCTION__);
-    return E_NOTIMPL;
+    if (!phIcon) {
+      return E_INVALIDARG;
+    }
+    *phIcon = (HICON)LoadImageW(
+      sDllInstanceHandle,
+      MAKEINTRESOURCEW(IDIS_KSESHKEYBOARD),
+      IMAGE_ICON,
+      16,
+      16,
+      LR_DEFAULTCOLOR
+    );
+    FileLogger::Println(__FUNCTION__ + std::string(*phIcon == nullptr ? ": fail" : ": ok"));
+    return *phIcon == nullptr ? E_FAIL : S_OK;
   }
 
   STDMETHODIMP GetText(_Out_ BSTR* pbstrText) override {
     FileLogger::Println(__FUNCTION__);
-    return E_NOTIMPL;
+    *pbstrText = SysAllocString(fDescription.c_str());
+
+    return (*pbstrText == nullptr) ? E_OUTOFMEMORY : S_OK;
   }
 
   STDMETHODIMP AdviseSink(__RPC__in REFIID riid, __RPC__in_opt IUnknown* punk, __RPC__out DWORD* pdwCookie) override {
@@ -149,4 +158,5 @@ private:
   GUID fId;
   DWORD const fCookie = 0;
   ITfLangBarItemSink* fLangBarItemSink;
+  std::wstring const fDescription;
 };
