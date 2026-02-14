@@ -6,12 +6,17 @@ public:
     : fRefCount(1)
     , fId(id)
     , fLangBarItemSink(nullptr)
-    , fDescription(L"Settings") {
+    , fDescription(L"Settings")
+    , fMenuWindow(nullptr) {
     DllAddRef();
+    InitMenuWindow();
   }
 
   ~LangBarItemButton() {
     DllRelease();
+    if (fMenuWindow) {
+      DestroyWindow(fMenuWindow);
+    }
   }
 
   STDMETHODIMP QueryInterface(REFIID riid, _Outptr_ void** ppvObj) override {
@@ -77,18 +82,32 @@ public:
 
   STDMETHODIMP OnClick(TfLBIClick click, POINT pt, _In_ const RECT* prcArea) override {
     FileLogger::Println(__FUNCTION__);
+    HMENU menu = CreatePopupMenu();
+    if (!menu) {
+      return E_FAIL;
+    }
+    AppendMenuW(menu, MF_STRING, 1, L"Settings");
+    UINT command = TrackPopupMenuEx(
+      menu,
+      TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
+      pt.x,
+      pt.y,
+      fMenuWindow,
+      nullptr
+    );
+    DestroyMenu(menu);
+    if (command == 1) {
+      MessageBoxW(nullptr, L"yo", L"Info", MB_OK);
+    }
     return S_OK;
   }
 
   STDMETHODIMP InitMenu(_In_ ITfMenu* pMenu) override {
-    FileLogger::Println(__FUNCTION__);
-    pMenu->AddMenuItem(1, 0, nullptr, nullptr, L"wa", (ULONG)wcslen(L"wa"), nullptr);
-    return S_OK;
+    return E_NOTIMPL;
   }
 
   STDMETHODIMP OnMenuSelect(UINT wID) override {
-    FileLogger::Println(__FUNCTION__);
-    return S_OK;
+    return E_NOTIMPL;
   }
 
   STDMETHODIMP GetIcon(_Out_ HICON* phIcon) override {
@@ -152,10 +171,31 @@ public:
     return S_OK;
   }
 
+  void InitMenuWindow() {
+    WNDCLASSEXW wc = {};
+    wc.cbSize = sizeof(WNDCLASSEXW);
+    wc.lpfnWndProc = DefWindowProcW;
+    wc.hInstance = sDllInstanceHandle;
+    wc.lpszClassName = L"KSeshMenuWindow";
+    RegisterClassExW(&wc);
+    fMenuWindow = CreateWindowExW(
+      0,
+      L"KSeshMenuWindow",
+      L"",
+      WS_POPUP,
+      0, 0, 0, 0,
+      HWND_MESSAGE,
+      nullptr,
+      sDllInstanceHandle,
+      nullptr
+    );
+  }
+
 private:
   LONG fRefCount;
   GUID fId;
   DWORD const fCookie = 0;
   ITfLangBarItemSink* fLangBarItemSink;
   std::wstring const fDescription;
+  HWND fMenuWindow;
 };
