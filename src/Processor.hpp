@@ -154,13 +154,13 @@ private:
       {L'a', L"ꜥ"},
       {L'q', L"ḳ"},
       {L'i', L"ꞽ"},
-      {L'y', L"ï"},
+      {L'Y', L"ï"},
     };
     if (LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault) == 0) {
       map.erase(L'q');
     }
     if (LoadRegistryDWORD(kRegistrySettingReplaceYKey, kRegistrySettingReplaceYDefault) == 0) {
-      map.erase(L'y');
+      map.erase(L'Y');
     }
     switch (LoadRegistryDWORD(kRegistrySettingITypeKey, kRegistrySettingITypeDefault)) {
     case 0:

@@ -221,8 +221,8 @@ private:
       SetDlgItemTextW(hwnd, 2002, L"i҆: i + U+0486");
       SetDlgItemTextW(hwnd, 2003, L"i̯: i + U+032F");
       SetDlgItemTextW(hwnd, 2004, L"ꞽ: U+A7BD");
-      SetDlgItemTextW(hwnd, 3001, L"Replace 'q' with 'ḳ'");
-      SetDlgItemTextW(hwnd, 4001, L"Replace 'y' with 'ï'");
+      SetDlgItemTextW(hwnd, 3001, L"Replace q (small) with ḳ: U+1E33");
+      SetDlgItemTextW(hwnd, 4001, L"Replace Y (capital) with ï: U+00EF");
 
       DWORD replaceQ = LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault);
       CheckDlgButton(hwnd, 3001, replaceQ == 0 ? BST_UNCHECKED : BST_CHECKED);
