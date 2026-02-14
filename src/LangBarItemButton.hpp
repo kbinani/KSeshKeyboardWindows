@@ -100,11 +100,10 @@ public:
       sDllInstanceHandle,
       MAKEINTRESOURCEW(IDIS_KSESHKEYBOARD),
       IMAGE_ICON,
-      16,
-      16,
+      24,
+      24,
       LR_DEFAULTCOLOR
     );
-    FileLogger::Println(__FUNCTION__ + std::string(*phIcon == nullptr ? ": fail" : ": ok"));
     return *phIcon == nullptr ? E_FAIL : S_OK;
   }
 
