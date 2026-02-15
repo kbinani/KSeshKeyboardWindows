@@ -82,22 +82,29 @@ public:
 
   STDMETHODIMP OnClick(TfLBIClick click, POINT pt, _In_ const RECT* prcArea) override {
     FileLogger::Println(__FUNCTION__);
-    HMENU menu = CreatePopupMenu();
-    if (!menu) {
-      return E_FAIL;
+    switch (click) {
+    case TF_LBI_CLK_RIGHT: {
+      HMENU menu = CreatePopupMenu();
+      if (!menu) {
+        return E_FAIL;
+      }
+      AppendMenuW(menu, MF_STRING, 1, L"Settings");
+      UINT command = TrackPopupMenuEx(
+        menu,
+        TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
+        pt.x,
+        pt.y,
+        GetFocus(),
+        nullptr
+      );
+      DestroyMenu(menu);
+      if (command == 1) {
+        DialogBoxParamW(sDllInstanceHandle, MAKEINTRESOURCEW(IDD_SETTINGS_DIALOG), nullptr, SettingsDialogProc, reinterpret_cast<LPARAM>(this));
+      }
+      return S_OK;
     }
-    AppendMenuW(menu, MF_STRING, 1, L"Settings");
-    UINT command = TrackPopupMenuEx(
-      menu,
-      TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
-      pt.x,
-      pt.y,
-      GetFocus(),
-      nullptr
-    );
-    DestroyMenu(menu);
-    if (command == 1) {
-      DialogBoxParamW(sDllInstanceHandle, MAKEINTRESOURCEW(IDD_SETTINGS_DIALOG), nullptr, SettingsDialogProc, reinterpret_cast<LPARAM>(this));
+    case TF_LBI_CLK_LEFT:
+      break;
     }
     return S_OK;
   }
