@@ -15,6 +15,8 @@ OutputBaseFilename=KSeshIME-{#app_version}
 SolidCompression=yes
 WizardStyle=modern dynamic
 ArchitecturesInstallIn64BitMode=x64os
+LicenseFile=../LICENSE.txt
+OutputDir=output
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
