@@ -1,8 +1,8 @@
 #pragma once
 
-class Processor : public ITfTextInputProcessorEx, public ITfKeyEventSink {
+class Processor : public ITfTextInputProcessorEx, public ITfKeyEventSink, public ITfThreadMgrEventSink {
 public:
-  Processor() : fRefCount(1), fThreadManager(nullptr), fClientId(TF_CLIENTID_NULL), fLangBarItemButton(nullptr) {
+  Processor() {
     DllAddRef();
   }
 
@@ -20,6 +20,8 @@ public:
       *ppvObj = dynamic_cast<ITfTextInputProcessorEx*>(this);
     } else if (IsEqualIID(riid, IID_ITfKeyEventSink)) {
       *ppvObj = dynamic_cast<ITfKeyEventSink*>(this);
+    } else if (IsEqualIID(riid, IID_ITfThreadMgrEventSink)) {
+      *ppvObj = dynamic_cast<ITfThreadMgrEventSink*>(this);
     } else {
       *ppvObj = nullptr;
     }
@@ -79,12 +81,17 @@ public:
       Deactivate();
       return E_FAIL;
     }
+    if (!InitThreadMgrEventSink()) {
+      Deactivate();
+      return E_FAIL;
+    }
     return S_OK;
   }
 
   STDMETHODIMP Deactivate() override {
     DeinitKeyEventSink();
     DeinitLangBarItemButton();
+    DeinitThreadMgrEventSink();
     if (fThreadManager) {
       fThreadManager->Release();
       fThreadManager = nullptr;
@@ -94,7 +101,6 @@ public:
   }
 
   STDMETHODIMP OnSetFocus(BOOL fForeground) override {
-    FileLogger::Println(__FUNCTION__);
     return S_OK;
   }
 
@@ -139,7 +145,56 @@ public:
     return S_OK;
   }
 
+  STDMETHODIMP OnSetFocus(ITfDocumentMgr* pDocMgrFocus, ITfDocumentMgr* pDocMgrPrevFocus) override {
+    if (pDocMgrFocus) {
+      fSettings = Settings::Load();
+    }
+    return S_OK;
+  }
+
+  STDMETHODIMP OnInitDocumentMgr(ITfDocumentMgr* pDocMgr) override {
+    return S_OK;
+  }
+
+  STDMETHODIMP OnUninitDocumentMgr(ITfDocumentMgr* pDocMgr) override {
+    return S_OK;
+  }
+
+  STDMETHODIMP OnPushContext(ITfContext* pContext) override {
+    return S_OK;
+  }
+
+  STDMETHODIMP OnPopContext(ITfContext* pContext) override {
+    return S_OK;
+  }
+
 private:
+  bool InitThreadMgrEventSink() {
+    ITfSource* source = nullptr;
+    if (FAILED(fThreadManager->QueryInterface(IID_ITfSource, (void**)&source))) {
+      return false;
+    }
+    defer{
+      source->Release();
+    };
+    return source->AdviseSink(IID_ITfThreadMgrEventSink, (ITfThreadMgrEventSink*)this, &fThreadMgrEventSinkCookie) == S_OK;
+  }
+
+  void DeinitThreadMgrEventSink() {
+    if (fThreadMgrEventSinkCookie == TF_INVALID_COOKIE) {
+      return;
+    }
+    ITfSource* source = nullptr;
+    if (FAILED(fThreadManager->QueryInterface(IID_ITfSource, (void**)&source))) {
+      return;
+    }
+    defer{
+      source->Release();
+    };
+    source->UnadviseSink(fThreadMgrEventSinkCookie);
+    fThreadMgrEventSinkCookie = TF_INVALID_COOKIE;
+  }
+
   bool InitKeyEventSink() {
     ITfKeystrokeMgr* manager = nullptr;
     if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
@@ -220,10 +275,11 @@ private:
   }
 
 private:
-  LONG fRefCount;
-  ITfThreadMgr* fThreadManager;
-  TfClientId fClientId;
-  DWORD fActivateFlags;
-  LangBarItemButton* fLangBarItemButton;
+  LONG fRefCount = 1;
+  ITfThreadMgr* fThreadManager = nullptr;
+  TfClientId fClientId = TF_CLIENTID_NULL;
+  DWORD fActivateFlags = 0;
+  LangBarItemButton* fLangBarItemButton = nullptr;
   Settings fSettings;
+  DWORD fThreadMgrEventSinkCookie = TF_INVALID_COOKIE;
 };
