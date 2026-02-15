@@ -150,6 +150,7 @@
     <ClInclude Include="src\RegKey.hpp" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\Settings.hpp" />
+    <ClInclude Include="src\SettingsDialog.hpp" />
     <ClInclude Include="src\Unicode.hpp" />
   </ItemGroup>
   <ItemGroup>

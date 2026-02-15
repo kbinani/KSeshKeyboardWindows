@@ -70,7 +70,7 @@ public:
     fThreadManager->AddRef();
     fClientId = tfClientId;
     fActivateFlags = dwFlags;
-    SyncSettings();
+    fSettings = Settings::Load();
     if (!InitKeyEventSink()) {
       Deactivate();
       return E_FAIL;
@@ -141,11 +141,6 @@ public:
   }
 
 private:
-  void SyncSettings() {
-    Settings s;
-    fSettings = s;
-  }
-
   bool InitKeyEventSink() {
     ITfKeystrokeMgr* manager = nullptr;
     if (FAILED(fThreadManager->QueryInterface(IID_ITfKeystrokeMgr, (void**)&manager))) {
@@ -197,9 +192,9 @@ private:
     defer{
       manager->Release();
     };
-    auto button = new (std::nothrow) LangBarItemButton(GUID_LBI_INPUTMODE, [this]() {
-      SyncSettings();
-      });
+    auto button = new (std::nothrow) LangBarItemButton(GUID_LBI_INPUTMODE, [this](Settings const& after) {
+      fSettings = after;
+    });
     if (button == nullptr) {
       return false;
     }

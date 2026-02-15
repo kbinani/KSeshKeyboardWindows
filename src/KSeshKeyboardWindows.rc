@@ -52,11 +52,15 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDIS_ICON_BRAND ICON                  "..\\img\\brand.ico"
-IDIS_ICON_TRANSLITERATION_BLACK ICON  "..\\img\\transliteration_black.ico"
-IDIS_ICON_TRANSLITERATION_WHITE ICON  "..\\img\\transliteration_white.ico"
-IDIS_ICON_HIEROGLYPH_BLACK ICON       "..\\img\\hieroglyph_black.ico"
-IDIS_ICON_HIEROGLYPH_WHITE ICON       "..\\img\\hieroglyph_white.ico"
+IDIS_ICON_BRAND         ICON                    "..\\img\\brand.ico"
+
+IDIS_ICON_TRANSLITERATION_BLACK ICON                    "..\\img\\transliteration_black.ico"
+
+IDIS_ICON_TRANSLITERATION_WHITE ICON                    "..\\img\\transliteration_white.ico"
+
+IDIS_ICON_HIEROGLYPH_BLACK ICON                    "..\\img\\hieroglyph_black.ico"
+
+IDIS_ICON_HIEROGLYPH_WHITE ICON                    "..\\img\\hieroglyph_white.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -64,10 +68,10 @@ IDIS_ICON_HIEROGLYPH_WHITE ICON       "..\\img\\hieroglyph_white.ico"
 // Dialog
 //
 
-IDD_SETTINGS_DIALOG DIALOGEX 0, 0, 250, 184
+IDD_SETTINGS_DIALOG DIALOGEX 0, 0, 250, 198
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_NOACTIVATE
-CAPTION "KSesh IME Settings"
+CAPTION ""
 FONT 9, "MS Shell Dlg", 400, 0, 0x80
 BEGIN
     GROUPBOX        "Replace i (small) with:",-1,10,10,230,104
@@ -79,8 +83,9 @@ BEGIN
     CONTROL         "2005",2005,"Button",BS_AUTORADIOBUTTON,21,94,189,12
     CONTROL         "3001",3001,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,123,232,12
     CONTROL         "4001",4001,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,138,232,12
-    DEFPUSHBUTTON   "Cancel",IDCANCEL,193,163,50,14
-    PUSHBUTTON      "OK",IDOK,130,163,50,14
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,193,177,50,14
+    PUSHBUTTON      "OK",IDOK,130,177,50,14
+    PUSHBUTTON      "Reset to Defaults",IDRESET_TO_DEFAULTS,14,159,75,14
 END
 
 
@@ -97,7 +102,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 243
         TOPMARGIN, 7
-        BOTTOMMARGIN, 177
+        BOTTOMMARGIN, 191
     END
 END
 #endif    // APSTUDIO_INVOKED

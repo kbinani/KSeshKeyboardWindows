@@ -10,30 +10,32 @@ constexpr DWORD kRegistrySettingITypeDefault = 4;
 
 class Settings {
 public:
-  Settings() {
-    fReplaceSmallQ = LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault) != 0;
-    fReplaceCapitalY = LoadRegistryDWORD(kRegistrySettingReplaceYKey, kRegistrySettingReplaceYDefault) != 0;
+  static Settings Load() {
+    Settings s;
+    s.fReplaceSmallQ = LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault) != 0;
+    s.fReplaceCapitalY = LoadRegistryDWORD(kRegistrySettingReplaceYKey, kRegistrySettingReplaceYDefault) != 0;
     switch (LoadRegistryDWORD(kRegistrySettingITypeKey, kRegistrySettingITypeDefault)) {
     case 0:
-      fIReplacement = IReplacement::SmallDotlessIAndCombiningRightHalfRingAbove;
+      s.fIReplacement = IReplacement::SmallDotlessIAndCombiningRightHalfRingAbove;
       break;
     case 1:
-      fIReplacement = IReplacement::SmallIAndCombiningRightHalfRingAbove;
+      s.fIReplacement = IReplacement::SmallIAndCombiningRightHalfRingAbove;
       break;
     case 2:
-      fIReplacement = IReplacement::SmallIAndCombiningCyrillicPsiliPneumata;
+      s.fIReplacement = IReplacement::SmallIAndCombiningCyrillicPsiliPneumata;
       break;
     case 3:
-      fIReplacement = IReplacement::SmallIAndCombiningInvertedBreveBelow;
+      s.fIReplacement = IReplacement::SmallIAndCombiningInvertedBreveBelow;
       break;
     case 5:
-      fIReplacement = IReplacement::Unchanged;
+      s.fIReplacement = IReplacement::Unchanged;
       break;
     case 4:
     default:
-      fIReplacement = IReplacement::SmallGlottalI;
+      s.fIReplacement = IReplacement::SmallGlottalI;
       break;
     }
+    return s;
   }
 
   std::optional<std::wstring> map(WCHAR input) const {
@@ -72,6 +74,16 @@ public:
       break;
     }
     return std::nullopt;
+  }
+
+  void save() {
+    SaveRegistryDWORD(kRegistrySettingITypeKey, static_cast<DWORD>(fIReplacement));
+    SaveRegistryDWORD(kRegistrySettingReplaceQKey, fReplaceSmallQ ? 1 : 0);
+    SaveRegistryDWORD(kRegistrySettingReplaceYKey, fReplaceCapitalY ? 1 : 0);
+  }
+
+  bool equals(Settings const& other) const {
+    return fIReplacement == other.fIReplacement && fReplaceSmallQ == other.fReplaceSmallQ && fReplaceCapitalY == other.fReplaceCapitalY;
   }
 
 public:

@@ -2,12 +2,12 @@
 
 class LangBarItemButton : public ITfLangBarItemButton, public ITfSource {
 public:
-  explicit LangBarItemButton(GUID id, std::function<void()> onChange)
+  explicit LangBarItemButton(GUID id, std::function<void(Settings const&)> onChangeSettings)
     : fRefCount(1)
     , fId(id)
     , fLangBarItemSink(nullptr)
     , fMenuWindow(nullptr)
-    , fOnChange(onChange) {
+    , fOnChangeSettings(onChangeSettings) {
     DllAddRef();
     InitMenuWindow();
   }
@@ -88,7 +88,8 @@ public:
       if (!menu) {
         return E_FAIL;
       }
-      AppendMenuW(menu, MF_STRING, 1, L"Settings");
+      UINT constexpr id = 1;
+      AppendMenuW(menu, MF_STRING, id, L"Settings");
       UINT command = TrackPopupMenuEx(
         menu,
         TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
@@ -98,8 +99,16 @@ public:
         nullptr
       );
       DestroyMenu(menu);
-      if (command == 1) {
-        DialogBoxParamW(sDllInstanceHandle, MAKEINTRESOURCEW(IDD_SETTINGS_DIALOG), nullptr, SettingsDialogProc, reinterpret_cast<LPARAM>(this));
+      if (command == id) {
+        auto current = Settings::Load();
+        SettingsDialog dialog(current);
+        Settings after = dialog.show();
+        if (!after.equals(current)) {
+          after.save();
+          if (fOnChangeSettings) {
+            fOnChangeSettings(after);
+          }
+        }
       }
       return S_OK;
     }
@@ -217,61 +226,6 @@ private:
     SetWindowLongPtrW(fMenuWindow, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
   }
 
-  static INT_PTR CALLBACK SettingsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-    case WM_INITDIALOG: {
-      auto t = reinterpret_cast<LangBarItemButton*>(lParam);
-      SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(t));
-
-      for (DWORD i = static_cast<DWORD>(IReplacement::IReplacementMin); i <= static_cast<DWORD>(IReplacement::IReplacementMax); i++) {
-        auto ir = static_cast<IReplacement>(i);
-        auto label = StringFromIReplacement(ir) + L": " + DescriptionFromIReplacement(ir);
-        SetDlgItemTextW(hwnd, 2000 + i, label.c_str());
-      }
-      SetDlgItemTextW(hwnd, 3001, L"Replace q (small) with ḳ: U+1E33");
-      SetDlgItemTextW(hwnd, 4001, L"Replace Y (capital) with ï: U+00EF");
-
-      Settings s;
-      CheckDlgButton(hwnd, 3001, s.fReplaceSmallQ ? BST_CHECKED : BST_UNCHECKED );
-      CheckDlgButton(hwnd, 4001, s.fReplaceCapitalY ? BST_CHECKED : BST_UNCHECKED);
-      CheckRadioButton(
-        hwnd,
-        2000 + static_cast<DWORD>(IReplacement::IReplacementMin),
-        2000 + static_cast<DWORD>(IReplacement::IReplacementMax),
-        2000 + static_cast<DWORD>(s.fIReplacement)
-      );
-      return TRUE;
-    }
-    case WM_COMMAND:
-      switch (LOWORD(wParam)) {
-      case IDOK: {
-        LangBarItemButton *ptr =  reinterpret_cast<LangBarItemButton*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
-        for (DWORD i = static_cast<DWORD>(IReplacement::IReplacementMin); i <= static_cast<DWORD>(IReplacement::IReplacementMax); i++) {
-          if (IsDlgButtonChecked(hwnd, i + 2000) == BST_CHECKED) {
-            SaveRegistryDWORD(kRegistrySettingITypeKey, i);
-          }
-        }
-        auto replaceQ = IsDlgButtonChecked(hwnd, 3001) == BST_CHECKED;
-        SaveRegistryDWORD(kRegistrySettingReplaceQKey, replaceQ ? 1 : 0);
-        auto replaceY = IsDlgButtonChecked(hwnd, 4001) == BST_CHECKED;
-        SaveRegistryDWORD(kRegistrySettingReplaceYKey, replaceY ? 1 : 0);
-        if (ptr->fOnChange) {
-          ptr->fOnChange();
-        }
-        EndDialog(hwnd, IDOK);
-        break;
-      }
-      case IDCANCEL:
-        EndDialog(hwnd, IDCANCEL);
-        break;
-      default:
-        break;
-      }
-      return TRUE;
-    }
-    return FALSE;
-  }
-
   static LRESULT CALLBACK MenuWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTINGCHANGE) {
       if (lParam && wcscmp((LPCWSTR)lParam, L"ImmersiveColorSet") == 0) {
@@ -290,5 +244,5 @@ private:
   DWORD const fCookie = 0;
   ITfLangBarItemSink* fLangBarItemSink;
   HWND fMenuWindow;
-  std::function<void()> fOnChange;
+  std::function<void(Settings const&)> fOnChangeSettings;
 };

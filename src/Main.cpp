@@ -63,6 +63,7 @@ static std::string StringFromGUID(REFGUID guid);
 #include "Unicode.hpp"
 #include "IReplacement.hpp"
 #include "Settings.hpp"
+#include "SettingsDialog.hpp"
 #include "LangBarItemButton.hpp"
 #include "Processor.hpp"
 
