@@ -1,5 +1,13 @@
 #pragma once
 
+constexpr WCHAR kRegistrySettingReplaceQKey[] = L"ReplaceQ";
+constexpr WCHAR kRegistrySettingReplaceYKey[] = L"ReplaceY";
+constexpr WCHAR kRegistrySettingITypeKey[] = L"IType";
+
+constexpr DWORD kRegistrySettingReplaceQDefault = 0;
+constexpr DWORD kRegistrySettingReplaceYDefault = 1;
+constexpr DWORD kRegistrySettingITypeDefault = 4;
+
 class Settings {
 public:
   Settings() {
@@ -19,11 +27,11 @@ public:
       fIReplacement = IReplacement::SmallIAndCombiningInvertedBreveBelow;
       break;
     case 5:
-      fIReplacement = IReplacement::SmallGlottalI;
+      fIReplacement = IReplacement::Unchanged;
       break;
     case 4:
     default:
-      fIReplacement = IReplacement::Unchanged;
+      fIReplacement = IReplacement::SmallGlottalI;
       break;
     }
   }
@@ -53,7 +61,7 @@ public:
         return std::nullopt;
       }
     case L'i':
-      return GetIReplacement(fIReplacement);
+      return StringFromIReplacement(fIReplacement);
     case L'Y':
       if (fReplaceCapitalY) {
         return unicode::kLatinSmallLetterIWithDiaeresis;

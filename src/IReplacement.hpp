@@ -12,7 +12,7 @@ enum class IReplacement : DWORD {
   IReplacementMax = Unchanged,
 };
 
-inline std::wstring GetIReplacement(IReplacement t) {
+inline std::wstring StringFromIReplacement(IReplacement t) {
   switch (t) {
   case IReplacement::SmallDotlessIAndCombiningRightHalfRingAbove:
     return std::wstring(unicode::kLatinSmallLetterDotlessI) + std::wstring(unicode::kCombiningRightHalfRingAbove);
@@ -31,7 +31,7 @@ inline std::wstring GetIReplacement(IReplacement t) {
   return L"i";
 }
 
-inline std::wstring GetIReplacementDescription(IReplacement t) {
+inline std::wstring DescriptionFromIReplacement(IReplacement t) {
   switch (t) {
   case IReplacement::SmallDotlessIAndCombiningRightHalfRingAbove:
     return L"ı + U+0357";

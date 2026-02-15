@@ -225,7 +225,7 @@ private:
 
       for (DWORD i = static_cast<DWORD>(IReplacement::IReplacementMin); i <= static_cast<DWORD>(IReplacement::IReplacementMax); i++) {
         auto ir = static_cast<IReplacement>(i);
-        auto label = GetIReplacement(ir) + L": " + GetIReplacementDescription(ir);
+        auto label = StringFromIReplacement(ir) + L": " + DescriptionFromIReplacement(ir);
         SetDlgItemTextW(hwnd, 2000 + i, label.c_str());
       }
       SetDlgItemTextW(hwnd, 3001, L"Replace q (small) with ḳ: U+1E33");
