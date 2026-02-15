@@ -37,12 +37,21 @@ private:
     CheckDlgButton(hwnd, 6001, fSettings.fCapitalAin ? BST_CHECKED : BST_UNCHECKED);
   }
 
+  void updateTitle(HWND hwnd) {
+    std::wstring title = L"KSesh IME Settings";
+    if (!fOriginal.equals(fSettings)) {
+      title += L"*";
+    }
+    SetWindowTextW(hwnd, title.c_str());
+  }
+
   static INT_PTR CALLBACK SettingsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_INITDIALOG: {
       auto dialog = reinterpret_cast<SettingsDialog*>(lParam);
       SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(dialog));
       dialog->update(hwnd);
+      dialog->updateTitle(hwnd);
       return TRUE;
     }
     case WM_COMMAND: {
@@ -74,11 +83,7 @@ private:
       default:
         break;
       }
-      std::wstring title = L"KSesh IME Settings";
-      if (!dialog->fOriginal.equals(dialog->fSettings)) {
-        title += L"*";
-      }
-      SetWindowTextW(hwnd, title.c_str());
+      dialog->updateTitle(hwnd);
       return TRUE;
     }
     }
