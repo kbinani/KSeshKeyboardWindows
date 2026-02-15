@@ -113,15 +113,15 @@ public:
       return E_INVALIDARG;
     }
 
-    WCHAR ch = ConvertVKey((UINT)wParam);
-    auto mapped = fSettings.map(ch);
-    if (!mapped) {
+    WCHAR ch = ConvertVKey((UINT)wParam, lParam);
+    if (!(ch == 0x09 || ch == 0x0a || (0x20 <= ch && ch <= 0x7e))) {
       *pIsEaten = FALSE;
       return S_OK;
     }
 
     *pIsEaten = TRUE;
-    EditSession* session = new (std::nothrow) EditSession(pContext, *mapped);
+    auto mapped = fSettings.map(ch);
+    EditSession* session = new (std::nothrow) EditSession(pContext, mapped);
     if (!session) {
       return S_FALSE;
     }
@@ -219,17 +219,29 @@ private:
     manager->UnadviseKeyEventSink(fClientId);
   }
 
-  WCHAR ConvertVKey(UINT code) {
-    UINT scanCode = 0;
-    scanCode = MapVirtualKeyW(code, 0);
+  static HKL GetTargetHKL() {
+    LANGID langId = GetUserDefaultLangID();
+    WCHAR layoutId[9];
+    StringCchPrintfW(layoutId, ARRAYSIZE(layoutId), L"%08x", langId);
+    return LoadKeyboardLayoutW(layoutId, KLF_NOTELLSHELL);
+  }
+
+  static WCHAR ConvertVKey(UINT code, LPARAM lParam) {
+    UINT scanCode = (lParam >> 16) & 0xFF;
 
     BYTE abKbdState[256] = { '\0' };
     if (!GetKeyboardState(abKbdState)) {
       return 0;
     }
 
+    HKL hkl = GetTargetHKL();
+    UINT vKey = MapVirtualKeyExW(scanCode, MAPVK_VSC_TO_VK_EX, hkl);
+    if (vKey == 0) {
+      vKey = code;
+    }
+
     WCHAR wch = '\0';
-    if (ToUnicode(code, scanCode, abKbdState, &wch, 1, 0) == 1) {
+    if (ToUnicodeEx(vKey, scanCode, abKbdState, &wch, 1, 0, hkl) == 1) {
       return wch;
     }
 

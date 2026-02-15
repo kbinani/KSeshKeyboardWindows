@@ -44,7 +44,7 @@ public:
     return s;
   }
 
-  std::optional<std::wstring> map(WCHAR input) const {
+  std::wstring map(WCHAR input) const {
     switch (input) {
     case L'D':
       return unicode::kLatinSmallLetterDWithLineBelow;
@@ -74,7 +74,7 @@ public:
       if (fReplaceSmallQ) {
         return unicode::kLatinSmallLetterKWithDotBelow;
       } else {
-        return std::nullopt;
+        break;
       }
     case L'i':
       return StringFromIReplacement(fIReplacement);
@@ -82,12 +82,12 @@ public:
       if (fReplaceCapitalY) {
         return unicode::kLatinSmallLetterIWithDiaeresis;
       } else {
-        return std::nullopt;
+        break;
       }
     default:
       break;
     }
-    return std::nullopt;
+    return std::wstring(1, input);
   }
 
   void save() {
