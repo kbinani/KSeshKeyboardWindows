@@ -3,14 +3,19 @@
 class FileLogger {
 public:
   FileLogger() {
-    int64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    fFilePath = std::format("C:\\Users\\User\\AppData\\Local\\Temp\\KSeshIME_{}.log", timestamp);
+    fTimestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
   }
 
   void println(std::string const& s) {
 #if defined(_DEBUG)
+    WCHAR tempPath[MAX_PATH];
+    DWORD length = GetTempPathW(MAX_PATH, tempPath);
+    if (length <= 0) {
+      return;
+    }
+    auto filePath = std::format(L"{}\\KSeshIME_{}.log", tempPath, fTimestamp);
     FILE* fp = nullptr;
-    errno_t err = fopen_s(&fp, fFilePath.c_str(), "a+b");
+    errno_t err = _wfopen_s(&fp, filePath.c_str(), L"a+b");
     if (!fp) {
       return;
     }
@@ -27,5 +32,5 @@ public:
   }
 
 private:
-  std::string fFilePath;
+  int64_t fTimestamp;
 };

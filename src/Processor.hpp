@@ -77,7 +77,6 @@ public:
     }
     if (!InitLangBarItemButton()) {
       Deactivate();
-      FileLogger::Println("fail");
       return E_FAIL;
     }
     return S_OK;
@@ -183,7 +182,6 @@ private:
   }
 
   bool InitLangBarItemButton() {
-    FileLogger::Println(__FUNCTION__);
     ITfLangBarItemMgr* manager = nullptr;
     HRESULT hr = fThreadManager->QueryInterface(IID_ITfLangBarItemMgr, (void**)&manager);
     if (FAILED(hr) || !manager) {

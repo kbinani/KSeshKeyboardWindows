@@ -49,7 +49,6 @@ public:
   }
 
   STDMETHODIMP GetInfo(_Out_ TF_LANGBARITEMINFO* pInfo) override {
-    FileLogger::Println(__FUNCTION__);
     if (!pInfo) {
       return E_INVALIDARG;
     }
@@ -62,7 +61,6 @@ public:
   }
 
   STDMETHODIMP GetStatus(_Out_ DWORD* pdwStatus) override {
-    FileLogger::Println(__FUNCTION__);
     if (!pdwStatus) {
       return E_INVALIDARG;
     }
@@ -71,17 +69,14 @@ public:
   }
 
   STDMETHODIMP Show(BOOL fShow) override {
-    FileLogger::Println(__FUNCTION__);
     return S_OK;
   }
 
   STDMETHODIMP GetTooltipString(_Out_ BSTR* pbstrToolTip) override {
-    FileLogger::Println(__FUNCTION__);
     return S_OK;
   }
 
   STDMETHODIMP OnClick(TfLBIClick click, POINT pt, _In_ const RECT* prcArea) override {
-    FileLogger::Println(__FUNCTION__);
     switch (click) {
     case TF_LBI_CLK_RIGHT: {
       HMENU menu = CreatePopupMenu();
@@ -127,7 +122,6 @@ public:
   }
 
   STDMETHODIMP GetIcon(_Out_ HICON* phIcon) override {
-    FileLogger::Println(__FUNCTION__);
     if (!phIcon) {
       return E_INVALIDARG;
     }
@@ -145,15 +139,12 @@ public:
   }
 
   STDMETHODIMP GetText(_Out_ BSTR* pbstrText) override {
-    FileLogger::Println(__FUNCTION__);
     *pbstrText = SysAllocString(L"Settings");
 
     return (*pbstrText == nullptr) ? E_OUTOFMEMORY : S_OK;
   }
 
   STDMETHODIMP AdviseSink(__RPC__in REFIID riid, __RPC__in_opt IUnknown* punk, __RPC__out DWORD* pdwCookie) override {
-    FileLogger::Println(__FUNCTION__);
-
     if (!IsEqualIID(IID_ITfLangBarItemSink, riid)) {
       return CONNECT_E_CANNOTCONNECT;
     }
@@ -175,7 +166,6 @@ public:
   }
 
   STDMETHODIMP UnadviseSink(DWORD dwCookie) override {
-    FileLogger::Println(__FUNCTION__);
     if (dwCookie != fCookie) {
       return CONNECT_E_NOCONNECTION;
     }
