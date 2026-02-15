@@ -61,6 +61,7 @@ static std::string StringFromGUID(REFGUID guid);
 #include "ClassFactory.hpp"
 #include "EditSession.hpp"
 #include "RegKey.hpp"
+#include "Unicode.hpp"
 #include "LangBarItemButton.hpp"
 #include "Processor.hpp"
 

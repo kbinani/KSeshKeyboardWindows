@@ -144,17 +144,17 @@ public:
 private:
   void SyncSettings() {
     std::map<WCHAR, std::wstring> map = {
-      {L'D', L"ḏ"},
-      {L'T', L"ṯ"},
-      {L'A', L"ꜣ"},
-      {L'H', L"ḥ"},
-      {L'x', L"ḫ"},
-      {L'X', L"ẖ"},
-      {L'S', L"š"},
-      {L'a', L"ꜥ"},
-      {L'q', L"ḳ"},
-      {L'i', L"ꞽ"},
-      {L'Y', L"ï"},
+      {L'D', unicode::kLatinSmallLetterDWithLineBelow},
+      {L'T', unicode::kLatinCapitalLetterTWithLineBelow},
+      {L'A', unicode::kLatinSmallLetterEgyptologicalAlef},
+      {L'H', unicode::kLatinSmallLetterHWithDotBelow},
+      {L'x', unicode::kLatinSmallLetterHWithBreveBelow},
+      {L'X', unicode::kLatinSmallLetterHWithLineBelow},
+      {L'S', unicode::kLatinSmallLetterSWithCaron},
+      {L'a', unicode::kLatinSmallLetterEgyptologicalAin},
+      {L'q', unicode::kLatinSmallLetterKWithDotBelow},
+      {L'i', unicode::kLatinSmallLetterGlottalI},
+      {L'Y', unicode::kLatinSmallLetterIWithDiaeresis},
     };
     if (LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault) == 0) {
       map.erase(L'q');
@@ -164,23 +164,23 @@ private:
     }
     switch (LoadRegistryDWORD(kRegistrySettingITypeKey, kRegistrySettingITypeDefault)) {
     case 0:
-      map[L'i'] = L"ı͗";
+      map[L'i'] = unicode::kLatinSmallLetterDotlessI + unicode::kCombiningRightHalfRingAbove;
       break;
     case 1:
-      map[L'i'] = L"i͗";
+      map[L'i'] = unicode::kLatinSmallLetterI + unicode::kCombiningRightHalfRingAbove;
       break;
     case 2:
-      map[L'i'] = L"i҆";
+      map[L'i'] = unicode::kLatinSmallLetterI + unicode::kCombiningCyrillicPsiliPneumata;
       break;
     case 3:
-      map[L'i'] = L"i̯";
+      map[L'i'] = unicode::kLatinSmallLetterI + unicode::kCombiningInvertedBreveBelow;
       break;
     case 5:
       map.erase(L'i');
       break;
     case 4:
     default:
-      map[L'i'] = L"ꞽ";
+      map[L'i'] = unicode::kLatinSmallLetterGlottalI;
       break;
     }
     fMap = map;

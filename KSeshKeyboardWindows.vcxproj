@@ -148,6 +148,7 @@
     <ClInclude Include="src\Processor.hpp" />
     <ClInclude Include="src\RegKey.hpp" />
     <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\Unicode.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\KSeshIME.def" />
