@@ -144,10 +144,12 @@
     <ClInclude Include="src\EditSession.hpp" />
     <ClInclude Include="src\Defer.hpp" />
     <ClInclude Include="src\FileLogger.hpp" />
+    <ClInclude Include="src\IReplacement.hpp" />
     <ClInclude Include="src\LangBarItemButton.hpp" />
     <ClInclude Include="src\Processor.hpp" />
     <ClInclude Include="src\RegKey.hpp" />
     <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\Settings.hpp" />
     <ClInclude Include="src\Unicode.hpp" />
   </ItemGroup>
   <ItemGroup>

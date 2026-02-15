@@ -109,24 +109,23 @@ public:
     }
 
     WCHAR ch = ConvertVKey((UINT)wParam);
-    auto found = fMap.find(ch);
-    if (found == fMap.end()) {
+    auto mapped = fSettings.map(ch);
+    if (!mapped) {
       *pIsEaten = FALSE;
       return S_OK;
-    } else {
-      *pIsEaten = TRUE;
-
-      EditSession* session = new (std::nothrow) EditSession(pContext, found->second);
-      if (!session) {
-        return S_FALSE;
-      }
-      defer{
-        session->Release();
-      };
-      HRESULT hr = E_FAIL;
-      hr = pContext->RequestEditSession(fClientId, session, TF_ES_ASYNCDONTCARE | TF_ES_READWRITE, &hr);
-      return hr;
     }
+
+    *pIsEaten = TRUE;
+    EditSession* session = new (std::nothrow) EditSession(pContext, *mapped);
+    if (!session) {
+      return S_FALSE;
+    }
+    defer{
+      session->Release();
+    };
+    HRESULT hr = E_FAIL;
+    hr = pContext->RequestEditSession(fClientId, session, TF_ES_ASYNCDONTCARE | TF_ES_READWRITE, &hr);
+    return hr;
   }
 
   STDMETHODIMP OnTestKeyUp(ITfContext* pContext, WPARAM wParam, LPARAM lParam, BOOL* pIsEaten) override {
@@ -143,47 +142,8 @@ public:
 
 private:
   void SyncSettings() {
-    std::map<WCHAR, std::wstring> map = {
-      {L'D', unicode::kLatinSmallLetterDWithLineBelow},
-      {L'T', unicode::kLatinCapitalLetterTWithLineBelow},
-      {L'A', unicode::kLatinSmallLetterEgyptologicalAlef},
-      {L'H', unicode::kLatinSmallLetterHWithDotBelow},
-      {L'x', unicode::kLatinSmallLetterHWithBreveBelow},
-      {L'X', unicode::kLatinSmallLetterHWithLineBelow},
-      {L'S', unicode::kLatinSmallLetterSWithCaron},
-      {L'a', unicode::kLatinSmallLetterEgyptologicalAin},
-      {L'q', unicode::kLatinSmallLetterKWithDotBelow},
-      {L'i', unicode::kLatinSmallLetterGlottalI},
-      {L'Y', unicode::kLatinSmallLetterIWithDiaeresis},
-    };
-    if (LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault) == 0) {
-      map.erase(L'q');
-    }
-    if (LoadRegistryDWORD(kRegistrySettingReplaceYKey, kRegistrySettingReplaceYDefault) == 0) {
-      map.erase(L'Y');
-    }
-    switch (LoadRegistryDWORD(kRegistrySettingITypeKey, kRegistrySettingITypeDefault)) {
-    case 0:
-      map[L'i'] = unicode::kLatinSmallLetterDotlessI + unicode::kCombiningRightHalfRingAbove;
-      break;
-    case 1:
-      map[L'i'] = unicode::kLatinSmallLetterI + unicode::kCombiningRightHalfRingAbove;
-      break;
-    case 2:
-      map[L'i'] = unicode::kLatinSmallLetterI + unicode::kCombiningCyrillicPsiliPneumata;
-      break;
-    case 3:
-      map[L'i'] = unicode::kLatinSmallLetterI + unicode::kCombiningInvertedBreveBelow;
-      break;
-    case 5:
-      map.erase(L'i');
-      break;
-    case 4:
-    default:
-      map[L'i'] = unicode::kLatinSmallLetterGlottalI;
-      break;
-    }
-    fMap = map;
+    Settings s;
+    fSettings = s;
   }
 
   bool InitKeyEventSink() {
@@ -239,7 +199,7 @@ private:
     };
     auto button = new (std::nothrow) LangBarItemButton(GUID_LBI_INPUTMODE, [this]() {
       SyncSettings();
-    });
+      });
     if (button == nullptr) {
       return false;
     }
@@ -272,5 +232,5 @@ private:
   TfClientId fClientId;
   DWORD fActivateFlags;
   LangBarItemButton* fLangBarItemButton;
-  std::map<WCHAR, std::wstring> fMap;
+  Settings fSettings;
 };

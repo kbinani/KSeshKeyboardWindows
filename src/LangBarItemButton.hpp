@@ -223,30 +223,32 @@ private:
       auto t = reinterpret_cast<LangBarItemButton*>(lParam);
       SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(t));
 
-      SetDlgItemTextW(hwnd, 2000, L"ı͗: ı + U+0357");
-      SetDlgItemTextW(hwnd, 2001, L"i͗: i + U+0357");
-      SetDlgItemTextW(hwnd, 2002, L"i҆: i + U+0486");
-      SetDlgItemTextW(hwnd, 2003, L"i̯: i + U+032F");
-      SetDlgItemTextW(hwnd, 2004, L"ꞽ: U+A7BD");
-      SetDlgItemTextW(hwnd, 2005, L"i: U+0069 (unchanged)");
+      for (DWORD i = static_cast<DWORD>(IReplacement::IReplacementMin); i <= static_cast<DWORD>(IReplacement::IReplacementMax); i++) {
+        auto ir = static_cast<IReplacement>(i);
+        auto label = GetIReplacement(ir) + L": " + GetIReplacementDescription(ir);
+        SetDlgItemTextW(hwnd, 2000 + i, label.c_str());
+      }
       SetDlgItemTextW(hwnd, 3001, L"Replace q (small) with ḳ: U+1E33");
       SetDlgItemTextW(hwnd, 4001, L"Replace Y (capital) with ï: U+00EF");
 
-      DWORD replaceQ = LoadRegistryDWORD(kRegistrySettingReplaceQKey, kRegistrySettingReplaceQDefault);
-      CheckDlgButton(hwnd, 3001, replaceQ == 0 ? BST_UNCHECKED : BST_CHECKED);
-      DWORD replaceY = LoadRegistryDWORD(kRegistrySettingReplaceYKey, kRegistrySettingReplaceYDefault);
-      CheckDlgButton(hwnd, 4001, replaceY == 0 ? BST_UNCHECKED : BST_CHECKED);
-      DWORD iType = LoadRegistryDWORD(kRegistrySettingITypeKey, kRegistrySettingITypeDefault);
-      CheckRadioButton(hwnd, 2000, 2005, 2000 + iType);
+      Settings s;
+      CheckDlgButton(hwnd, 3001, s.fReplaceSmallQ ? BST_CHECKED : BST_UNCHECKED );
+      CheckDlgButton(hwnd, 4001, s.fReplaceCapitalY ? BST_CHECKED : BST_UNCHECKED);
+      CheckRadioButton(
+        hwnd,
+        2000 + static_cast<DWORD>(IReplacement::IReplacementMin),
+        2000 + static_cast<DWORD>(IReplacement::IReplacementMax),
+        2000 + static_cast<DWORD>(s.fIReplacement)
+      );
       return TRUE;
     }
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
       case IDOK: {
         LangBarItemButton *ptr =  reinterpret_cast<LangBarItemButton*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
-        for (int i = 2000; i <= 2005; i++) {
-          if (IsDlgButtonChecked(hwnd, i) == BST_CHECKED) {
-            SaveRegistryDWORD(kRegistrySettingITypeKey, i - 2000);
+        for (DWORD i = static_cast<DWORD>(IReplacement::IReplacementMin); i <= static_cast<DWORD>(IReplacement::IReplacementMax); i++) {
+          if (IsDlgButtonChecked(hwnd, i + 2000) == BST_CHECKED) {
+            SaveRegistryDWORD(kRegistrySettingITypeKey, i);
           }
         }
         auto replaceQ = IsDlgButtonChecked(hwnd, 3001) == BST_CHECKED;
