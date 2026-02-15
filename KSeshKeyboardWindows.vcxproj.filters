@@ -80,7 +80,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="src\KSeshKeyboardWindows.rc">
+    <ResourceCompile Include="src\KSeshIME.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
