@@ -3,10 +3,14 @@
 constexpr WCHAR kRegistrySettingReplaceQKey[] = L"ReplaceQ";
 constexpr WCHAR kRegistrySettingReplaceYKey[] = L"ReplaceY";
 constexpr WCHAR kRegistrySettingITypeKey[] = L"IType";
+constexpr WCHAR kRegistrySettingCapitalAlephKey[] = L"CapitalAleph";
+constexpr WCHAR kRegistrySettingCapitalAinKey[] = L"CapitalAin";
 
 constexpr DWORD kRegistrySettingReplaceQDefault = 0;
 constexpr DWORD kRegistrySettingReplaceYDefault = 1;
 constexpr DWORD kRegistrySettingITypeDefault = 4;
+constexpr DWORD kRegistrySettingCapitalAlephDefault = 0;
+constexpr DWORD kRegistrySettingCapitalAinDefault = 0;
 
 class Settings {
 public:
@@ -35,6 +39,8 @@ public:
       s.fIReplacement = IReplacement::SmallGlottalI;
       break;
     }
+    s.fCapitalAleph = LoadRegistryDWORD(kRegistrySettingCapitalAlephKey, kRegistrySettingCapitalAlephDefault);
+    s.fCapitalAin = LoadRegistryDWORD(kRegistrySettingCapitalAinKey, kRegistrySettingCapitalAinDefault);
     return s;
   }
 
@@ -45,7 +51,11 @@ public:
     case L'T':
       return unicode::kLatinCapitalLetterTWithLineBelow;
     case L'A':
-      return unicode::kLatinSmallLetterEgyptologicalAlef;
+      if (fCapitalAleph) {
+        return unicode::kLatinCapitalLetterEgyptologicalAlef;
+      } else {
+        return unicode::kLatinSmallLetterEgyptologicalAlef;
+      }
     case L'H':
       return unicode::kLatinSmallLetterHWithDotBelow;
     case L'x':
@@ -55,7 +65,11 @@ public:
     case L'S':
       return unicode::kLatinSmallLetterSWithCaron;
     case L'a':
-      return unicode::kLatinSmallLetterEgyptologicalAin;
+      if (fCapitalAin) {
+        return unicode::kLatinCapitalLetterEgyptologicalAin;
+      } else {
+        return unicode::kLatinSmallLetterEgyptologicalAin;
+      }
     case L'q':
       if (fReplaceSmallQ) {
         return unicode::kLatinSmallLetterKWithDotBelow;
@@ -80,14 +94,22 @@ public:
     SaveRegistryDWORD(kRegistrySettingITypeKey, static_cast<DWORD>(fIReplacement));
     SaveRegistryDWORD(kRegistrySettingReplaceQKey, fReplaceSmallQ ? 1 : 0);
     SaveRegistryDWORD(kRegistrySettingReplaceYKey, fReplaceCapitalY ? 1 : 0);
+    SaveRegistryDWORD(kRegistrySettingCapitalAlephKey, fCapitalAleph ? 1 : 0);
+    SaveRegistryDWORD(kRegistrySettingCapitalAinKey, fCapitalAin ? 1 : 0);
   }
 
   bool equals(Settings const& other) const {
-    return fIReplacement == other.fIReplacement && fReplaceSmallQ == other.fReplaceSmallQ && fReplaceCapitalY == other.fReplaceCapitalY;
+    return fIReplacement == other.fIReplacement
+      && fReplaceSmallQ == other.fReplaceSmallQ
+      && fReplaceCapitalY == other.fReplaceCapitalY
+      && fCapitalAleph == other.fCapitalAleph
+      && fCapitalAin == other.fCapitalAin;
   }
 
 public:
   IReplacement fIReplacement = IReplacement::SmallGlottalI;
   bool fReplaceSmallQ = false;
   bool fReplaceCapitalY = true;
+  bool fCapitalAleph = false;
+  bool fCapitalAin = false;
 };

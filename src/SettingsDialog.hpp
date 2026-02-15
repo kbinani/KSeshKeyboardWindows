@@ -22,15 +22,19 @@ private:
     }
     SetDlgItemTextW(hwnd, 3001, L"Replace q (small) with ḳ: U+1E33");
     SetDlgItemTextW(hwnd, 4001, L"Replace Y (capital) with ï: U+00EF");
+    SetDlgItemTextW(hwnd, 5001, L"Replace A (capital) with capital Ꜣ");
+    SetDlgItemTextW(hwnd, 6001, L"Replace a (small) with capital ꜥ");
 
-    CheckDlgButton(hwnd, 3001, fSettings.fReplaceSmallQ ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hwnd, 4001, fSettings.fReplaceCapitalY ? BST_CHECKED : BST_UNCHECKED);
     CheckRadioButton(
       hwnd,
       2000 + static_cast<DWORD>(IReplacement::IReplacementMin),
       2000 + static_cast<DWORD>(IReplacement::IReplacementMax),
       2000 + static_cast<DWORD>(fSettings.fIReplacement)
     );
+    CheckDlgButton(hwnd, 3001, fSettings.fReplaceSmallQ ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hwnd, 4001, fSettings.fReplaceCapitalY ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hwnd, 5001, fSettings.fCapitalAleph ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hwnd, 6001, fSettings.fCapitalAin ? BST_CHECKED : BST_UNCHECKED);
   }
 
   static INT_PTR CALLBACK SettingsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -50,6 +54,8 @@ private:
       }
       dialog->fSettings.fReplaceSmallQ = IsDlgButtonChecked(hwnd, 3001) == BST_CHECKED;
       dialog->fSettings.fReplaceCapitalY = IsDlgButtonChecked(hwnd, 4001) == BST_CHECKED;
+      dialog->fSettings.fCapitalAleph = IsDlgButtonChecked(hwnd, 5001) == BST_CHECKED;
+      dialog->fSettings.fCapitalAin = IsDlgButtonChecked(hwnd, 6001) == BST_CHECKED;
 
       switch (LOWORD(wParam)) {
       case IDOK: {

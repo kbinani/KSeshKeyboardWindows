@@ -8,6 +8,8 @@ WCHAR constexpr kLatinSmallLetterDWithLineBelow[] = {0x1E0F};
 WCHAR constexpr kLatinCapitalLetterTWithLineBelow[] = {0x1E6F};
 // U+A723
 WCHAR constexpr kLatinSmallLetterEgyptologicalAlef[] = { 0xA723 };
+// U+A722
+WCHAR constexpr kLatinCapitalLetterEgyptologicalAlef[] = { 0xA722 };
 // U+1E25
 WCHAR constexpr kLatinSmallLetterHWithDotBelow[] = { 0x1E25 };
 // U+1E2B
@@ -18,6 +20,8 @@ WCHAR constexpr kLatinSmallLetterHWithLineBelow[] = { 0x1E96 };
 WCHAR constexpr kLatinSmallLetterSWithCaron[] = { 0x0161 };
 // U+A725
 WCHAR constexpr kLatinSmallLetterEgyptologicalAin[] = { 0xA725 };
+// U+A724
+WCHAR constexpr kLatinCapitalLetterEgyptologicalAin[] = { 0xA724 };
 // U+1E33
 WCHAR constexpr kLatinSmallLetterKWithDotBelow[] = { 0x1E33 };
 // U+A7BD
