@@ -87,6 +87,8 @@
     <ClInclude Include="src\EditSession.hpp" />
     <ClInclude Include="src\Defer.hpp" />
     <ClInclude Include="src\FileLogger.hpp" />
+    <ClInclude Include="src\GUID.hpp" />
+    <ClInclude Include="src\Install.hpp" />
     <ClInclude Include="src\IReplacement.hpp" />
     <ClInclude Include="src\LangBarItemButton.hpp" />
     <ClInclude Include="src\Processor.hpp" />
