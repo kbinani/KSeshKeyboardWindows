@@ -45,47 +45,57 @@ private:
     SetWindowTextW(hwnd, title.c_str());
   }
 
+  void initDialog(HWND hwnd) {
+    SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    update(hwnd);
+    updateTitle(hwnd);
+  }
+
+  void handleCommand(HWND hwnd, WPARAM wParam) {
+    for (DWORD i = static_cast<DWORD>(IReplacement::IReplacementMin); i <= static_cast<DWORD>(IReplacement::IReplacementMax); i++) {
+      if (IsDlgButtonChecked(hwnd, i + 2000) == BST_CHECKED) {
+        fSettings.fIReplacement = static_cast<IReplacement>(i);
+      }
+    }
+    fSettings.fReplaceSmallQ = IsDlgButtonChecked(hwnd, 3001) == BST_CHECKED;
+    fSettings.fReplaceCapitalY = IsDlgButtonChecked(hwnd, 4001) == BST_CHECKED;
+    fSettings.fCapitalAleph = IsDlgButtonChecked(hwnd, 5001) == BST_CHECKED;
+    fSettings.fCapitalAin = IsDlgButtonChecked(hwnd, 6001) == BST_CHECKED;
+
+    switch (LOWORD(wParam)) {
+    case IDOK: {
+      EndDialog(hwnd, IDOK);
+      break;
+    }
+    case IDCANCEL:
+      EndDialog(hwnd, IDCANCEL);
+      break;
+    case IDRESET_TO_DEFAULTS: {
+      Settings s;
+      fSettings = s;
+      update(hwnd);
+      break;
+    }
+    default:
+      break;
+    }
+    updateTitle(hwnd);
+  }
+
   static INT_PTR CALLBACK SettingsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_INITDIALOG: {
       auto dialog = reinterpret_cast<SettingsDialog*>(lParam);
-      SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(dialog));
-      dialog->update(hwnd);
-      dialog->updateTitle(hwnd);
+      dialog->initDialog(hwnd);
       return TRUE;
     }
     case WM_COMMAND: {
-      SettingsDialog* dialog = reinterpret_cast<SettingsDialog*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
-      for (DWORD i = static_cast<DWORD>(IReplacement::IReplacementMin); i <= static_cast<DWORD>(IReplacement::IReplacementMax); i++) {
-        if (IsDlgButtonChecked(hwnd, i + 2000) == BST_CHECKED) {
-          dialog->fSettings.fIReplacement = static_cast<IReplacement>(i);
-        }
-      }
-      dialog->fSettings.fReplaceSmallQ = IsDlgButtonChecked(hwnd, 3001) == BST_CHECKED;
-      dialog->fSettings.fReplaceCapitalY = IsDlgButtonChecked(hwnd, 4001) == BST_CHECKED;
-      dialog->fSettings.fCapitalAleph = IsDlgButtonChecked(hwnd, 5001) == BST_CHECKED;
-      dialog->fSettings.fCapitalAin = IsDlgButtonChecked(hwnd, 6001) == BST_CHECKED;
-
-      switch (LOWORD(wParam)) {
-      case IDOK: {
-        EndDialog(hwnd, IDOK);
-        break;
-      }
-      case IDCANCEL:
-        EndDialog(hwnd, IDCANCEL);
-        break;
-      case IDRESET_TO_DEFAULTS: {
-        Settings s;
-        dialog->fSettings = s;
-        dialog->update(hwnd);
-        break;
-      }
-      default:
-        break;
-      }
-      dialog->updateTitle(hwnd);
+      auto dialog = reinterpret_cast<SettingsDialog*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+      dialog->handleCommand(hwnd, wParam);
       return TRUE;
     }
+    default:
+      break;
     }
     return FALSE;
   }
