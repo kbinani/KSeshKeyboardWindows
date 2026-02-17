@@ -2,15 +2,22 @@
 
 class SettingsDialog {
 public:
-  explicit SettingsDialog(Settings settings) : fOriginal(settings), fSettings(settings) {
+  explicit SettingsDialog(Settings settings) : fOriginal(settings), fSettings(settings), fHandle(nullptr) {
   }
 
-  Settings show() {
-    if (DialogBoxParamW(sDllInstanceHandle, MAKEINTRESOURCEW(IDD_SETTINGS_DIALOG), nullptr, SettingsDialogProc, reinterpret_cast<LPARAM>(this)) == IDOK) {
+  Settings show(HWND parent) {
+    if (DialogBoxParamW(sDllInstanceHandle, MAKEINTRESOURCEW(IDD_SETTINGS_DIALOG), parent, SettingsDialogProc, reinterpret_cast<LPARAM>(this)) == IDOK) {
       return fSettings;
     } else {
       return fOriginal;
     }
+  }
+
+  void focus() {
+    if (!fHandle) {
+      return;
+    }
+    SetActiveWindow(fHandle);
   }
 
 private:
@@ -46,6 +53,7 @@ private:
   }
 
   void initDialog(HWND hwnd) {
+    fHandle = hwnd;
     SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
     update(hwnd);
     updateTitle(hwnd);
@@ -103,4 +111,5 @@ private:
 private:
   Settings fOriginal;
   Settings fSettings;
+  HWND fHandle;
 };

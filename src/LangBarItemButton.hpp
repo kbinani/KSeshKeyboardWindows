@@ -95,15 +95,20 @@ public:
       );
       DestroyMenu(menu);
       if (command == id) {
+        if (fSettingsDialog) {
+          fSettingsDialog->focus();
+          return S_OK;
+        }
         auto current = Settings::Load();
-        SettingsDialog dialog(current);
-        Settings after = dialog.show();
+        fSettingsDialog = std::make_unique<SettingsDialog>(current);
+        Settings after = fSettingsDialog->show(GetFocus());
         if (!after.equals(current)) {
           after.save();
           if (fOnChangeSettings) {
             fOnChangeSettings(after);
           }
         }
+        fSettingsDialog = nullptr;
       }
       return S_OK;
     }
@@ -235,4 +240,5 @@ private:
   ITfLangBarItemSink* fLangBarItemSink;
   HWND fMenuWindow;
   std::function<void(Settings const&)> fOnChangeSettings;
+  std::unique_ptr<SettingsDialog> fSettingsDialog;
 };
