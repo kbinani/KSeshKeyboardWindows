@@ -22,4 +22,4 @@ OutputDir=output
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\x64\Release\KSeshIME.dll"; DestDir: "{sys}"; Flags: regserver restartreplace replacesameversion
+Source: "..\build\x64\Release\KSeshIME.dll"; DestDir: "{sys}"; Flags: regserver restartreplace replacesameversion
