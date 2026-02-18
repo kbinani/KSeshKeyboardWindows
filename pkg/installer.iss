@@ -5,7 +5,7 @@
 AppId={{8DC4614B-EFAC-40FA-BB6F-225890D62E28}}
 AppName=KSesh IME
 AppVersion={#app_version}
-AppPublisher=kbinani
+AppPublisher=Buntaro Okada
 AppPublisherURL={#app_url}
 AppSupportURL={#app_url}
 AppUpdatesURL={#app_url}
