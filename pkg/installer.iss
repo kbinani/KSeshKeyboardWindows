@@ -17,9 +17,11 @@ WizardStyle=modern dynamic
 ArchitecturesInstallIn64BitMode=x64os
 LicenseFile=../LICENSE.txt
 OutputDir=output
+; signtool="C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" $p
+SignTool=signtool sign /n $qOpen Source Developer, Buntaro Okada$q /t http://time.certum.pl/ /fd sha1 /v $f
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\build\x64\Release\KSeshIME.dll"; DestDir: "{sys}"; Flags: regserver restartreplace replacesameversion
+Source: "..\build\x64\Release\KSeshIME.dll"; DestDir: "{sys}"; Flags: regserver restartreplace replacesameversion signonce
