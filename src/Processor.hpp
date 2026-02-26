@@ -105,6 +105,15 @@ public:
   }
 
   STDMETHODIMP OnTestKeyDown(ITfContext* pContext, WPARAM wParam, LPARAM lParam, BOOL* pIsEaten) override {
+    if (!pIsEaten) {
+      return E_INVALIDARG;
+    }
+    WCHAR ch = ConvertVKey((UINT)wParam, lParam);
+    if (ShouldEatCharacter(ch)) {
+      *pIsEaten = TRUE;
+    } else {
+      *pIsEaten = FALSE;
+    }
     return S_OK;
   }
 
@@ -114,7 +123,7 @@ public:
     }
 
     WCHAR ch = ConvertVKey((UINT)wParam, lParam);
-    if (!(ch == 0x09 || ch == 0x0a || (0x20 <= ch && ch <= 0x7e))) {
+    if (!ShouldEatCharacter(ch)) {
       *pIsEaten = FALSE;
       return S_OK;
     }
@@ -169,6 +178,10 @@ public:
   }
 
 private:
+  static bool ShouldEatCharacter(WCHAR ch) {
+    return ch == 0x09 || ch == 0x0a || (0x20 <= ch && ch <= 0x7e);
+  }
+
   bool InitThreadMgrEventSink() {
     ITfSource* source = nullptr;
     if (FAILED(fThreadManager->QueryInterface(IID_ITfSource, (void**)&source))) {
