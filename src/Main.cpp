@@ -17,6 +17,7 @@
 #include <chrono>
 
 #include "resource.h"
+#include "Version.h"
 
 // {1E065A14-7F7F-4163-A7AB-BD2BB7BB721B}
 CLSID constexpr kClassId = { 0x1e065a14, 0x7f7f, 0x4163, { 0xa7, 0xab, 0xbd, 0x2b, 0xb7, 0xbb, 0x72, 0x1b } };

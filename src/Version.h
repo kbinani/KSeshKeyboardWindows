@@ -1,0 +1,2 @@
+#define KSESH_IME_VERSION "1.0.1"
+#define KSESH_IME_VERSION_RC 1,0,1,0

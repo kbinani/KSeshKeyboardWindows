@@ -73,7 +73,9 @@ public:
   }
 
   STDMETHODIMP GetTooltipString(_Out_ BSTR* pbstrToolTip) override {
-    return S_OK;
+    *pbstrToolTip = SysAllocString(L"KSesh IME v" KSESH_IME_VERSION);
+
+    return (*pbstrToolTip == nullptr) ? E_OUTOFMEMORY : S_OK;
   }
 
   STDMETHODIMP OnClick(TfLBIClick click, POINT pt, _In_ const RECT* prcArea) override {

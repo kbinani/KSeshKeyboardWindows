@@ -1,17 +1,17 @@
-#define app_version "1.0.1"
+#include "../src/Version.h"
 #define app_url "https://github.com/kbinani/KSeshKeyboardWindows"
 
 [Setup]
 AppId={{8DC4614B-EFAC-40FA-BB6F-225890D62E28}}
 AppName=KSesh IME
-AppVersion={#app_version}
+AppVersion={#KSESH_IME_VERSION}
 AppPublisher=Buntaro Okada
 AppPublisherURL={#app_url}
 AppSupportURL={#app_url}
 AppUpdatesURL={#app_url}
 CreateAppDir=no
 PrivilegesRequired=admin
-OutputBaseFilename=KSeshIME-{#app_version}
+OutputBaseFilename=KSeshIME-{#KSESH_IME_VERSION}
 SolidCompression=yes
 WizardStyle=modern dynamic
 ArchitecturesInstallIn64BitMode=x64os
