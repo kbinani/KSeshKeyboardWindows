@@ -1,4 +1,4 @@
-#define app_version "1.0.0"
+#define app_version "1.0.1"
 #define app_url "https://github.com/kbinani/KSeshKeyboardWindows"
 
 [Setup]
