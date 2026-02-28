@@ -19,6 +19,7 @@ LicenseFile=../LICENSE.txt
 OutputDir=output
 ; signtool="C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" $p
 SignTool=signtool sign /n $qOpen Source Developer, Buntaro Okada$q /t http://time.certum.pl/ /fd sha1 /v $f
+SignTool=signtool sign /n $qOpen Source Developer, Buntaro Okada$q /tr http://time.certum.pl/ /td sha256 /fd sha256 /as /v $f
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
